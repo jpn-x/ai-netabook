@@ -644,7 +644,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
         <button class="home-mic-btn alt" onclick="openCompose('free')"><span class="ic">⌨</span>書く</button>
       </div>
       <button class="home-tile" onclick="openCompose('topic')"><span class="ic">💡</span><div>今日のひとネタ<small>1問だけ、気軽にどうぞ</small></div></button>
-      <button class="home-tile mint" onclick="go('discovery')"><span class="ic">✨</span><div>AIからの発見<small>メモがつながると出てきます</small></div></button>
+      <button class="home-tile mint" onclick="go('discovery')"><span class="ic">✨</span><div>AIからの発見<small>たまったら、AIに見てもらえます</small></div></button>
       <button class="home-tile" onclick="go('notebook')"><span class="ic">📚</span><div>ネタ帳<small id="homeNoteCount">これまでの一言、ぜんぶここに</small></div></button>
     </div>
     <p class="lead" style="margin-top:22px;">数日後、AIが「これとこれ、つながってます」と教えてくれます。<br>それまでは、ただ一言残すだけでOK。</p>
@@ -698,6 +698,23 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     <div id="notebookBody"></div>
     <div class="step-actions">
       <button class="cta" onclick="openCompose('free')">🎙 もう一言残す</button>
+      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    </div>
+  </section>
+
+  <!-- 13: AIに見てもらう -->
+  <section class="screen" data-screen="aiprompt">
+    <p class="eyebrow">🧠 AIに見てもらう</p>
+    <h2>あなたのメモを、<br>AI用にまとめました。</h2>
+    <p class="lead">コピーして、好きなAIに貼るだけです。<br>このまとめ作業に外部AIは使っていません。</p>
+    <div class="card" id="aiSummaryCard"></div>
+    <textarea class="note-area" id="aiPromptText" style="min-height:220px;font-size:13px;" readonly aria-label="AI用プロンプト"></textarea>
+    <div class="step-actions">
+      <button class="cta" onclick="copyPrompt()">📋 プロンプトをコピー</button>
+    </div>
+    <p class="helper-note" id="copyStatus" style="margin-top:14px;">好きなAIを選んでください。タップすると自動でコピーして開きます。</p>
+    <div id="aiServiceButtons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;"></div>
+    <div class="step-actions" style="margin-top:24px;">
       <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
     </div>
   </section>
@@ -767,6 +784,7 @@ async function saveNotifyPreference(){
 const RENDER_HOOKS = {
   discovery: renderDiscoveryScreen,
   notebook: renderNotebookScreen,
+  aiprompt: renderAiPromptScreen,
   done: renderDoneStats,
   home: renderHomeStats
 };
@@ -1144,6 +1162,8 @@ function renderWeekSummaryHtml(notes){
     <p style="margin:0;font-size:14.5px;line-height:1.85;color:var(--ink-soft);">今週は${target.length}個の一言が残っています。${topText}</p>
   </div>`;
 }
+/* 現在v1の基本フローでは使わないが、将来の拡張用に残しておく
+   (本サービス側のGemini自動呼び出し)。呼び出さなければ費用もかからない。 */
 async function tryRemoteDiscovery(notes){
   try{
     const controller = new AbortController();
@@ -1155,21 +1175,15 @@ async function tryRemoteDiscovery(notes){
       signal: controller.signal
     });
     clearTimeout(timer);
-    if(!res.ok) return null; // 未設定(501)や一時エラーはローカルAIへ静かにフォールバック
+    if(!res.ok) return null;
     return await res.json();
   }catch(e){ return null; }
 }
-function localDiscoveryHtml(notes){
-  const discovery = AIEngine.generateDiscovery(notes);
-  if(!discovery) return '<div class="empty-card">まだ大きな発見はありません。<br>メモがもう少したまると、ここに出てきます。</div>';
-  const chips = discovery.notes.map(n=>`<div class="demo-chip">${escapeHtml(clipText(n.text,16))}</div>`).join('');
-  return `<div class="card">
-    <p style="margin:0 0 10px;font-weight:700;">見つかったつながり</p>
-    <div class="demo-strip" style="padding:0 0 12px;">${chips}</div>
-    <p style="margin:0;font-size:14.5px;line-height:1.85;">${escapeHtml(discovery.text)}</p>
-  </div>`;
-}
-async function renderDiscoveryScreen(){
+
+/* v1の基本フロー: サービス側はAI APIを呼ばず、ローカル集計だけで
+   「点と点」の手がかり(殿堂入り・週次サマリー)と、
+   ユーザー自身の好きなAIへ渡す「AIに見てもらう」導線を用意する。 */
+function renderDiscoveryScreen(){
   const notes = Storage.getAll();
   const body = document.getElementById('discoveryBody');
   const honor = AIEngine.honorMention(notes);
@@ -1179,29 +1193,106 @@ async function renderDiscoveryScreen(){
       <p style="margin:0;font-size:14px;color:var(--ink-soft);line-height:1.8;">「${escapeHtml(honor.keyword)}」、${honor.count}回登場しています。次は少し違う角度から話してみませんか？</p>
     </div>` : '';
 
+  let ctaHtml;
   if(notes.length < 3){
-    body.innerHTML = weekHtml + honorHtml || '<div class="empty-card">まだ発見はありません。<br>メモがもう少したまると、ここに出てきます。</div>';
-    if(!weekHtml && !honorHtml) body.innerHTML = '<div class="empty-card">まだ発見はありません。<br>メモがもう少したまると、ここに出てきます。</div>';
-    return;
-  }
-
-  body.innerHTML = weekHtml + honorHtml + '<div class="empty-card" id="discoveryLoading">考えています…</div>';
-  const remote = await tryRemoteDiscovery(notes);
-  const loadingEl = document.getElementById('discoveryLoading');
-  if(!loadingEl) return; // 別画面へ移動済み
-
-  if(remote && remote.hasDiscovery && remote.text){
-    const related = (remote.relatedIndexes||[]).map(i=>notes[i-1]).filter(Boolean);
-    const chips = (related.length ? related : notes.slice(0,4)).map(n=>`<div class="demo-chip">${escapeHtml(clipText(n.text,16))}</div>`).join('');
-    loadingEl.outerHTML = `<div class="card">
-      <p style="margin:0 0 10px;font-weight:700;">見つかったつながり</p>
-      <div class="demo-strip" style="padding:0 0 12px;">${chips}</div>
-      <p style="margin:0;font-size:14.5px;line-height:1.85;">${escapeHtml(remote.text)}</p>
-      <p style="margin:8px 0 0;font-size:11px;color:var(--ink-soft);">✨ AIが考えました</p>
-    </div>`;
+    ctaHtml = '<div class="empty-card">もう少しメモがたまると、AIに見てもらえるようになります。</div>';
   }else{
-    loadingEl.outerHTML = localDiscoveryHtml(notes);
+    ctaHtml = `<div class="card">
+      <p style="margin:0 0 10px;font-weight:700;">🧠 このメモ、AIに見てもらう？</p>
+      <p style="margin:0 0 14px;font-size:14px;color:var(--ink-soft);line-height:1.8;">好きなAI（ChatGPT / Gemini / Grok / Claude）に貼るだけの文章を作ります。</p>
+      <button class="cta" onclick="go('aiprompt')">AIに見てもらう →</button>
+    </div>`;
   }
+  body.innerHTML = weekHtml + honorHtml + ctaHtml;
+}
+
+/* ===================================================================
+   AIに見てもらう: サービス側でAI APIを呼ばず、ローカル集計だけで
+   ChatGPT/Gemini/Grok/Claude等に貼れる「万能プロンプト」を生成する。
+   =================================================================== */
+const AI_SERVICES = [
+  {name:'ChatGPT', url:'https://chatgpt.com/'},
+  {name:'Gemini', url:'https://gemini.google.com/app'},
+  {name:'Grok', url:'https://grok.com/'},
+  {name:'Claude', url:'https://claude.ai/new'}
+];
+function buildLocalSummary(notes){
+  const counts = {}, kwCounts = {};
+  notes.forEach(n=>{
+    if(n.category) counts[n.category] = (counts[n.category]||0)+1;
+    (n.keywords||[]).forEach(k=>{ kwCounts[k] = (kwCounts[k]||0)+1; });
+  });
+  const topCategories = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const topKeywords = Object.entries(kwCounts).filter(([,c])=>c>=2).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  return {topCategories, topKeywords};
+}
+function buildAiPrompt(notes){
+  const summary = buildLocalSummary(notes);
+  const catLines = summary.topCategories.map(([c,n])=>`・${c}: ${n}件`).join('\n') || '（まだ傾向が出るほどメモがたまっていません）';
+  const kwLines = summary.topKeywords.map(([k,n])=>`・${k}（${n}回）`).join('\n') || '（まだ繰り返しの言葉は見つかっていません）';
+  const recent = notes.slice(0,40);
+  const memoLines = recent.map((n,i)=>`${i+1}. (${formatDate(n.timestamp)}) ${n.text}`).join('\n');
+  return `あなたは私の思考整理パートナーです。
+以下は、私が最近残した日常の一言メモです。
+
+単なる要約ではなく、私自身がまだ気づいていない、
+・繰り返し登場するテーマ
+・意外な共通点
+・興味や関心
+・日常の不満や不便
+・面白い発想の種
+・会話のタネ
+・趣味や創作につながる可能性
+・仕事や生活の改善につながる可能性
+・ビジネスや副業につながる可能性
+を探してください。
+
+ただし、無理に意味を作らないでください。事実と推測を分けてください。
+私を無条件に褒めないでください。「あなたは天才です」「素晴らしい発想です」のようなヨイショは禁止です。
+
+最後に、「自分では思いつかなかったかもしれない発見」を3つ挙げてください。
+さらに、その中から「ちょっと試してみてもいいかも」と思える行動を1つ提案してください。
+
+【メモの傾向（件数の多い順）】
+${catLines}
+
+【繰り返し登場する言葉】
+${kwLines}
+
+【私のメモ（全${notes.length}件中、直近${recent.length}件）】
+${memoLines}`;
+}
+function renderAiPromptScreen(){
+  const notes = Storage.getAll();
+  document.getElementById('aiPromptText').value = buildAiPrompt(notes);
+  const summary = buildLocalSummary(notes);
+  const chips = summary.topCategories.length
+    ? summary.topCategories.map(([c,n])=>`<div class="demo-chip">${escapeHtml(c)} ${n}件</div>`).join('')
+    : '<div class="demo-chip">まだ傾向は出ていません</div>';
+  document.getElementById('aiSummaryCard').innerHTML = `
+    <p style="margin:0 0 10px;font-weight:700;">メモ ${notes.length}件をまとめました</p>
+    <div class="demo-strip" style="padding:0 0 4px;">${chips}</div>`;
+  document.getElementById('aiServiceButtons').innerHTML = AI_SERVICES.map(s=>
+    `<button class="cta secondary" style="border:1px solid var(--line);border-radius:14px;padding:14px 10px;" onclick="openAiService('${s.url}')">${s.name}で開く</button>`
+  ).join('');
+  document.getElementById('copyStatus').textContent = '好きなAIを選んでください。タップすると自動でコピーして開きます。';
+}
+async function copyPrompt(){
+  const ta = document.getElementById('aiPromptText');
+  const statusEl = document.getElementById('copyStatus');
+  try{
+    await navigator.clipboard.writeText(ta.value);
+  }catch(e){
+    ta.removeAttribute('readonly');
+    ta.focus(); ta.select();
+    try{ document.execCommand('copy'); }catch(e2){}
+    ta.setAttribute('readonly','');
+  }
+  if(statusEl) statusEl.textContent = 'コピーしました。好きなAIに貼り付けてください。';
+}
+async function openAiService(url){
+  await copyPrompt();
+  window.open(url, '_blank', 'noopener');
 }
 function clipText(t,n){ return t.length>n ? t.slice(0,n)+'…' : t; }
 function renderDoneStats(){
