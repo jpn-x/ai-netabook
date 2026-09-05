@@ -70,7 +70,7 @@ h1,h2,h3,.display{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:14px 18px;
+  padding:calc(14px + env(safe-area-inset-top)) 18px 14px;
   position:sticky;
   top:0;
   background:linear-gradient(var(--cream) 70%, transparent);
@@ -106,7 +106,7 @@ h1,h2,h3,.display{
 }
 .progress-wrap.show{display:flex;}
 .progress-label{
-  font-size:11px;
+  font-size:12px;
   color:var(--ink-soft);
   font-weight:700;
   letter-spacing:.04em;
@@ -254,7 +254,7 @@ h1,h2,h3,.display{
 .tap-target .tap-arrow{
   position:absolute;top:-14px;right:18px;
   background:var(--coral);color:#fff;
-  font-size:11px;font-weight:700;
+  font-size:12px;font-weight:700;
   padding:4px 10px;border-radius:99px;
   animation:pulse 1.8s ease-in-out infinite;
 }
@@ -279,38 +279,42 @@ h1,h2,h3,.display{
 .mock-google{
   background:var(--paper);
   border:1px solid var(--line);
-  border-radius:12px;
-  padding:14px;
-  font-size:13px;
+  border-radius:14px;
+  padding:18px;
+  font-size:14.5px;
+  line-height:1.6;
   color:var(--ink-soft);
+  min-height:88px;
 }
 .mock-google .mg-title{
   display:flex;align-items:center;gap:8px;
-  font-weight:700;color:var(--ink);margin-bottom:10px;
-  font-size:14px;
+  font-weight:700;color:var(--ink);margin-bottom:12px;
+  font-size:15.5px;
 }
 .mock-google .mg-btn{
-  margin-top:10px;
+  margin-top:12px;
   display:inline-block;
   background:#4285F4;color:#fff;
-  font-size:13px;font-weight:700;
-  padding:9px 16px;border-radius:8px;
+  font-size:14px;font-weight:700;
+  padding:11px 18px;border-radius:9px;
 }
 .ss-placeholder{
   border:2px dashed var(--line);
   border-radius:14px;
-  padding:26px 14px;
+  padding:34px 16px;
+  min-height:120px;
+  display:flex;align-items:center;justify-content:center;
   text-align:center;
   color:var(--ink-soft);
-  font-size:12.5px;
+  font-size:13.5px;
   background:var(--paper);
   margin-top:10px;
-  line-height:1.7;
+  line-height:1.8;
 }
 
 .step-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px;}
 .helper-note{
-  font-size:12.5px;
+  font-size:13.5px;
   color:var(--ink-soft);
   text-align:center;
   margin-top:14px;
@@ -328,10 +332,10 @@ h1,h2,h3,.display{
   margin-top:14px;
   background:var(--mint-soft);
   border-radius:14px;
-  padding:14px 16px;
-  font-size:13px;
+  padding:16px 18px;
+  font-size:14px;
   color:var(--ink);
-  line-height:1.8;
+  line-height:1.85;
 }
 .trouble.show{display:block;}
 
@@ -386,7 +390,7 @@ h1,h2,h3,.display{
   border-radius:16px;padding:14px;text-align:center;
 }
 .stat b{display:block;font-size:22px;color:var(--coral);font-variant-numeric:tabular-nums;}
-.stat span{font-size:11px;color:var(--ink-soft);}
+.stat span{font-size:12px;color:var(--ink-soft);}
 
 /* home mock */
 .home-mock{
@@ -413,7 +417,7 @@ h1,h2,h3,.display{
 }
 .home-tile.mint{background:var(--mint-soft);}
 .home-tile .ic{font-size:20px;}
-.home-tile small{display:block;font-weight:400;color:var(--ink-soft);font-size:12px;margin-top:2px;}
+.home-tile small{display:block;font-weight:400;color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
 button.home-tile{border:none;width:100%;text-align:left;font-family:inherit;cursor:pointer;}
 button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
 
@@ -460,7 +464,8 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   z-index:30;
 }
 .tabbar.show{display:flex;}
-.stage.with-tabbar{padding-bottom:76px;}
+.tabbar.kb-hidden{display:none !important;}
+.stage.with-tabbar{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
 .tab-btn{
   flex:1;border:none;background:transparent;
   display:flex;flex-direction:column;align-items:center;gap:2px;
@@ -905,6 +910,20 @@ function updateChrome(target){
 }
 document.getElementById('backBtn').addEventListener('click', back);
 
+/* iOS Safariでキーボード表示中に固定タブバーが入力欄と干渉しないよう、
+   テキスト入力中は一時的に隠す。 */
+(function guardTabbarDuringKeyboard(){
+  const tabbar = document.getElementById('tabbar');
+  document.addEventListener('focusin', (e)=>{
+    if(e.target.matches('textarea, input')) tabbar.classList.add('kb-hidden');
+  });
+  document.addEventListener('focusout', (e)=>{
+    if(e.target.matches('textarea, input')){
+      setTimeout(()=>tabbar.classList.remove('kb-hidden'), 80);
+    }
+  });
+})();
+
 function toggle(id){
   const el = document.getElementById(id);
   el.classList.toggle('show');
@@ -1124,16 +1143,18 @@ function startVoice(onResult, onUnsupported){
 function handleMicTap(ctxName){
   const ctx = getContext(ctxName);
   ctx.micBtn.classList.add('listening');
-  ctx.hintEl.textContent = '聞いています…';
+  ctx.hintEl.innerHTML = '🔴 話しています…';
   startVoice(
     (transcript)=>{
       ctx.micBtn.classList.remove('listening');
-      ctx.hintEl.textContent = 'タップして、ひとこと話しかけてみましょう';
+      ctx.hintEl.innerHTML = '✓ 文字にしました';
+      if(ctx.textarea) ctx.textarea.value = transcript;
       finishSave(transcript, 'voice', ctx);
+      setTimeout(()=>{ ctx.hintEl.textContent = 'タップして、ひとこと話しかけてみましょう'; }, 2200);
     },
     ()=>{
       ctx.micBtn.classList.remove('listening');
-      ctx.hintEl.textContent = 'この端末では音声が使えないようです。「書く」からどうぞ。';
+      ctx.hintEl.textContent = 'この端末では音声入力が利用できません。下の「書く」から文字で入力できます。';
       ctx.switchToText();
     }
   );
