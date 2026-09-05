@@ -65,6 +65,8 @@ h1,h2,h3,.display{
   min-height:100dvh;
   padding:0 0 40px;
   position:relative;
+  display:flex;
+  flex-direction:column;
 }
 .topbar{
   display:flex;
@@ -128,7 +130,8 @@ h1,h2,h3,.display{
 }
 
 .screen{display:none;padding:14px 20px 10px;animation:fadein .35s ease both;}
-.screen.active{display:block;}
+.screen.active{display:flex;flex-direction:column;flex:1;min-height:0;}
+.home-center{margin:auto 0;width:100%;}
 @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 @media (prefers-reduced-motion:reduce){.screen{animation:none;}}
 
@@ -663,18 +666,20 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
 
   <!-- 9: 通常ホーム(登録完了後のデフォルトTOP) -->
   <section class="screen" data-screen="home">
-    <div class="home-mock">
-      <div class="home-greet">今日、何かあった？</div>
-      <div class="home-mic-row">
-        <button class="home-mic-btn" onclick="openCompose('free')"><span class="ic">🎙</span>話す</button>
-        <button class="home-mic-btn alt" onclick="openCompose('free')"><span class="ic">⌨</span>書く</button>
+    <div class="home-center">
+      <div class="home-mock">
+        <div class="home-greet">今日、何かあった？</div>
+        <div class="home-mic-row">
+          <button class="home-mic-btn" onclick="openCompose('free')"><span class="ic">🎙</span>話す</button>
+          <button class="home-mic-btn alt" onclick="openCompose('free')"><span class="ic">⌨</span>書く</button>
+        </div>
+        <button class="home-tile" onclick="openCompose('topic')"><span class="ic">💡</span><div>今日のひとネタ<small>1問だけ、気軽にどうぞ</small></div></button>
+        <button class="home-tile mint" onclick="go('discovery')"><span class="ic">✨</span><div>今週のメモ<small>たまったら、AIに見てもらえます</small></div></button>
+        <button class="home-tile" onclick="go('notebook')"><span class="ic">📚</span><div>ネタ帳<small id="homeNoteCount">これまでの一言、ぜんぶここに</small></div></button>
+        <a class="home-tile" href="/workshop/" style="text-decoration:none;"><span class="ic">🏭</span><div>プロンプト工房<small>好きなAIに渡す準備をします</small></div></a>
       </div>
-      <button class="home-tile" onclick="openCompose('topic')"><span class="ic">💡</span><div>今日のひとネタ<small>1問だけ、気軽にどうぞ</small></div></button>
-      <button class="home-tile mint" onclick="go('discovery')"><span class="ic">✨</span><div>今週のメモ<small>たまったら、AIに見てもらえます</small></div></button>
-      <button class="home-tile" onclick="go('notebook')"><span class="ic">📚</span><div>ネタ帳<small id="homeNoteCount">これまでの一言、ぜんぶここに</small></div></button>
-      <a class="home-tile" href="/workshop/" style="text-decoration:none;"><span class="ic">🏭</span><div>プロンプト工房<small>好きなAIに渡す準備をします</small></div></a>
+      <p class="footer-note">あなたのメモは、この端末のブラウザの中だけに残ります。<br>外部のサーバーへは送信・保存されません。</p>
     </div>
-    <p class="footer-note">あなたのメモは、この端末のブラウザの中だけに残ります。<br>外部のサーバーへは送信・保存されません。</p>
   </section>
 
   <!-- 10: 一言を残す（ホーム/今日のひとネタ共通） -->
