@@ -129,7 +129,6 @@ h1,h2,h3,.display{
 
 .screen{display:none;padding:14px 20px 10px;animation:fadein .35s ease both;}
 .screen.active{display:block;}
-.screen-center{padding-top:6vh;}
 @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 @media (prefers-reduced-motion:reduce){.screen{animation:none;}}
 
@@ -647,7 +646,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   </section>
 
   <!-- 8: 完成 -->
-  <section class="screen" data-screen="done">
+  <section class="screen screen--centered" data-screen="done">
     <div class="screen-center">
       <div class="confetti-emoji">🎉</div>
       <h2 style="text-align:center;">完成！</h2>
@@ -668,7 +667,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   </section>
 
   <!-- 9: 通常ホーム(登録完了後のデフォルトTOP) -->
-  <section class="screen" data-screen="home">
+  <section class="screen screen--centered" data-screen="home">
     <div class="screen-center">
       <div class="home-mock">
         <div class="home-greet">今日、何かあった？</div>
@@ -686,7 +685,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   </section>
 
   <!-- 10: 一言を残す（ホーム/今日のひとネタ共通） -->
-  <section class="screen" data-screen="compose">
+  <section class="screen screen--centered" data-screen="compose">
     <div class="screen-center">
       <p class="eyebrow" id="composeEyebrow">💬 一言</p>
       <h2 id="composeTitle">今日、何かあった？</h2>
@@ -715,7 +714,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   </section>
 
   <!-- 11: 今週のメモ（旧: AIからの発見） -->
-  <section class="screen" data-screen="discovery">
+  <section class="screen screen--centered" data-screen="discovery">
     <div class="screen-center">
       <p class="eyebrow">✨ 今週のメモ</p>
       <h2>たまったメモを、<br>ふりかえってみましょう。</h2>
@@ -727,7 +726,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   </section>
 
   <!-- 12: ネタ帳 -->
-  <section class="screen" data-screen="notebook">
+  <section class="screen screen--centered" data-screen="notebook">
     <div class="screen-center">
       <p class="eyebrow">📚 ネタ帳</p>
       <h2>これまでの一言</h2>
@@ -743,7 +742,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   </section>
 
   <!-- 13: AIに、どう聞いてみる？(目的選択) -->
-  <section class="screen" data-screen="aipurpose">
+  <section class="screen screen--centered" data-screen="aipurpose">
     <div class="screen-center">
       <p class="eyebrow">🤖 AIに見てもらう</p>
       <h2>AIに、<br>どう聞いてみる？</h2>
@@ -756,7 +755,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   </section>
 
   <!-- 14: AI用プロンプト生成結果 -->
-  <section class="screen" data-screen="aiprompt">
+  <section class="screen screen--centered" data-screen="aiprompt">
     <div class="screen-center">
       <p class="eyebrow" id="aiPromptEyebrow">🧠 AIに見てもらう</p>
       <h2>これを、<br>AIに貼ってください。</h2>
