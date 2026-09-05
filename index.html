@@ -456,7 +456,7 @@ h1,h2,h3,.display{
   <section class="screen" data-screen="intro">
     <p class="eyebrow">はじめに</p>
     <h2>くだらない一言が、<br>あとで面白くなる話。</h2>
-    <p class="lead">「今日ツナおにぎり食べた」<br>「卵の黄身が2個だった」<br>そんな一言でOKです。<br>積み上がると、AIが気づいていなかったつながりを見つけてくれます。</p>
+    <p class="lead">こんな一言でOKです。</p>
     <div class="demo-strip">
       <div class="demo-chip">🍙 今日ツナおにぎり食べた</div>
       <div class="demo-chip">🥚 黄身が2個だった</div>
@@ -464,11 +464,10 @@ h1,h2,h3,.display{
       <div class="demo-chip">😩 上司の会議長すぎ</div>
       <div class="demo-chip">🪧 今の看板何？</div>
     </div>
-    <div class="card">
-      <p style="margin:0;font-size:14px;line-height:1.8;color:var(--ink-soft);">これは<b style="color:var(--ink)">あなた専用</b>の教科書です。データはぜんぶ、あなた自身のGoogleアカウントの中に残ります。他の人には見えません。</p>
-    </div>
+    <p class="lead" style="margin-top:18px;">これが積み上がると、AIがあとで気づく<br>つながりが出てきます。</p>
     <div class="step-actions">
-      <button class="cta" onclick="go('check')">つづける →</button>
+      <button class="cta" onclick="go('check')">はじめる →</button>
+      <p class="helper-note">あなた専用のGoogleアカウントの中だけで作ります</p>
     </div>
   </section>
 
@@ -476,7 +475,7 @@ h1,h2,h3,.display{
   <section class="screen" data-screen="check" data-step="1">
     <p class="eyebrow">STEP 1</p>
     <h2>使っているスマホ、<br>Googleでログインしてる？</h2>
-    <p class="lead">ふだん使っているGmailやYouTubeと同じアカウントでOKです。新しく何かを覚える必要はありません。</p>
+    <p class="lead">いつものGmailと同じアカウントでOKです。</p>
     <div class="mock-google">
       <div class="mg-title">🔵 G &nbsp;Googleアカウント</div>
       あなたの名前 · you@gmail.com
@@ -484,106 +483,97 @@ h1,h2,h3,.display{
     </div>
     <div class="ss-placeholder">ここに実際のGoogleログイン画面のスクリーンショットが入ります</div>
     <div class="step-actions">
-      <button class="cta" onclick="go('step1')">ログインしてる →</button>
+      <button class="cta" onclick="go('step1')">次へ →</button>
       <button class="cta secondary" onclick="toggle('t-check')">ログインしてるか分からない</button>
     </div>
-    <div class="trouble" id="t-check">大丈夫です。よくあります。<br>スマホの設定アプリで、一番上に自分の名前が出ていればログイン済みです。出ていなければ、そこをタップして「ログイン」を選ぶだけで完了します。</div>
+    <div class="trouble" id="t-check">大丈夫です。よくあります。<br>設定アプリの一番上に自分の名前が出ていればOK。出ていなければ、そこを押して「ログイン」を選ぶだけです。</div>
   </section>
 
   <!-- 3: STEP1 フォルダ -->
   <section class="screen" data-screen="step1" data-step="2">
     <p class="eyebrow">STEP 2</p>
     <h2>ネタ帳の「置き場所」を<br>ひとつ作ります。</h2>
-    <p class="lead">Google Driveの中に、あなた専用のフォルダをひとつ作るだけです。</p>
+    <p class="lead">ここを1回押すだけです。</p>
     <div class="tap-target">
-      <span class="tap-arrow">ここをタップ</span>
+      <span class="tap-arrow">① ここを押す</span>
       <div class="mock-google">
         <div class="mg-title">📁 新規</div>
-        「新しいフォルダ」を選んで<br>名前は「スーパーAIネタ帳」のままでOK
+        「新しいフォルダ」→ 名前はそのままでOK
         <div class="mg-btn">作成</div>
       </div>
     </div>
     <div class="ss-placeholder">ここに公式Google Drive画面のスクリーンショットが入ります</div>
-    <ul class="check-list">
-      <li class="done"><span class="ico">✓</span>置き場所ができました</li>
-    </ul>
+    <p class="helper-note" style="margin-top:0;">できたら、下のボタンで次へ進みます</p>
     <div class="step-actions">
-      <button class="cta" onclick="go('step2')">できた →</button>
+      <button class="cta" onclick="go('step2')">次へ →</button>
       <button class="cta secondary" onclick="toggle('t-step1')">うまくいかない</button>
     </div>
-    <div class="trouble" id="t-step1">大丈夫です。よくあります。<br>「＋新規」ボタンが見当たらないときは、画面の左下、または左上を探してみてください。もう一度やってみましょう。</div>
+    <div class="trouble" id="t-step1">大丈夫です。よくあります。<br>「＋新規」が見当たらないときは、画面の左下か左上を探してみてください。</div>
   </section>
 
   <!-- 4: STEP2 テンプレートコピー -->
   <section class="screen" data-screen="step2" data-step="3">
     <p class="eyebrow">STEP 3</p>
     <h2>ネタ帳の「中身」を<br>コピーします。</h2>
-    <p class="lead">すでに用意してあるテンプレートを、さっきのフォルダにコピーするだけ。作る必要はありません。</p>
+    <p class="lead">用意してあるものをコピーするだけ。<br>作る必要はありません。</p>
     <div class="tap-target">
-      <span class="tap-arrow">ここをタップ</span>
+      <span class="tap-arrow">① ここを押す</span>
       <div class="mock-google">
         <div class="mg-title">📄 スーパーAIネタ帳（テンプレート）</div>
-        メニューの「ファイル」→「コピーを作成」
+        「ファイル」→「コピーを作成」
         <div class="mg-btn">コピーを作成</div>
       </div>
     </div>
     <div class="ss-placeholder">ここにテンプレートのコピー画面のスクリーンショットが入ります</div>
-    <ul class="check-list">
-      <li class="done"><span class="ico">✓</span>置き場所ができました</li>
-      <li class="done"><span class="ico">✓</span>中身をコピーしました</li>
-    </ul>
+    <p class="helper-note" style="margin-top:0;">できたら、下のボタンで次へ進みます</p>
     <div class="step-actions">
-      <button class="cta" onclick="go('step3')">できた →</button>
+      <button class="cta" onclick="go('step3')">次へ →</button>
       <button class="cta secondary" onclick="toggle('t-step2')">うまくいかない</button>
     </div>
-    <div class="trouble" id="t-step2">大丈夫です。よくあります。<br>「コピーを作成」が見つからない場合は、画面右上の「︙」（点3つ）の中に入っていることがあります。一つ前に戻って確認してみましょう。</div>
+    <div class="trouble" id="t-step2">大丈夫です。よくあります。<br>「コピーを作成」は画面右上の「︙」の中にあることもあります。</div>
   </section>
 
   <!-- 5: STEP3 権限許可 -->
   <section class="screen" data-screen="step3" data-step="4">
     <p class="eyebrow">STEP 4</p>
     <h2>あなたの代わりに<br>動く許可を出します。</h2>
-    <p class="lead">「あなた専用のロボット」が、あなたのフォルダの中だけで働けるように、許可のボタンを押します。他の人のデータには触れません。</p>
+    <p class="lead">あなた専用の場所だけで働けるように、<br>許可を出します。そのまま押してOKです。</p>
     <div class="tap-target">
-      <span class="tap-arrow">ここをタップ</span>
+      <span class="tap-arrow">① ここを押す</span>
       <div class="mock-google">
         <div class="mg-title">🔵 G &nbsp;アクセスのリクエスト</div>
-        「スーパーAIネタ帳」があなたのGoogleアカウントへのアクセスを求めています
+        「スーパーAIネタ帳」があなたのアカウントへのアクセスを求めています
         <div class="mg-btn">許可</div>
       </div>
     </div>
     <div class="ss-placeholder">ここに実際の権限確認画面のスクリーンショットが入ります</div>
-    <ul class="check-list">
-      <li class="done"><span class="ico">✓</span>置き場所ができました</li>
-      <li class="done"><span class="ico">✓</span>中身をコピーしました</li>
-      <li class="done"><span class="ico">✓</span>許可を出しました</li>
-    </ul>
+    <p class="helper-note" style="margin-top:0;">できたら、下のボタンで次へ進みます</p>
     <div class="step-actions">
-      <button class="cta" onclick="go('step4')">できた →</button>
+      <button class="cta" onclick="go('step4')">次へ →</button>
       <button class="cta secondary" onclick="toggle('t-step3')">「安全ではない」と出た</button>
     </div>
-    <div class="trouble" id="t-step3">大丈夫です。よくあります。<br>これはあなた自身が作ったものなので心配いりません。「詳細」→「（アプリ名）に移動」の順にタップすると先に進めます。</div>
+    <div class="trouble" id="t-step3">大丈夫です。よくあります。<br>あなた自身が作ったものなので心配いりません。「詳細」→「（アプリ名）に移動」の順に押せば進めます。</div>
   </section>
 
   <!-- 6: STEP4 通知タイミング -->
   <section class="screen" data-screen="step4" data-step="5">
     <p class="eyebrow">STEP 5</p>
     <h2>いつ頃なら、<br>ちょっと一息つけそう？</h2>
-    <p class="lead">1日1回だけ、そっと声をかけます。うるさくしません。あとから変更もできます。</p>
+    <p class="lead">1日1回だけ、そっと声をかけます。<br>あとから変更もできます。</p>
     <div class="card" style="padding:8px;">
       <div id="timeOptions" style="display:flex;flex-direction:column;gap:8px;">
       </div>
     </div>
     <div class="step-actions">
-      <button class="cta" onclick="go('firstinput')">これで決定 →</button>
+      <button class="cta" onclick="go('firstinput')">次へ →</button>
     </div>
   </section>
 
   <!-- 7: 最初の一言 -->
   <section class="screen" data-screen="firstinput" data-step="6">
-    <p class="eyebrow">STEP 6・さいごに</p>
+    <p class="eyebrow">STEP 6</p>
     <h2>最初の一言を、<br>残してみましょう。</h2>
-    <p class="lead">どうでもいいことでOKです。うまく書こうとしなくて大丈夫。</p>
+    <p class="lead">どうでもいいことでOKです。</p>
     <div class="input-tabs">
       <div class="input-tab selected" id="tabMic" onclick="selectTab('mic')"><span class="big">🎙</span>話す</div>
       <div class="input-tab" id="tabText" onclick="selectTab('text')"><span class="big">⌨</span>書く</div>
@@ -599,8 +589,9 @@ h1,h2,h3,.display{
       </div>
     </div>
     <div class="reply-bubble" id="replyBubble" aria-live="polite">🍙 ツナ、今日の主役。</div>
+    <p class="helper-note" id="futureNote" style="display:none;">今日はここまででOK。<br>この一言も、あとで何かにつながるかもしれません。</p>
     <div class="step-actions" id="finishActions" style="display:none;">
-      <button class="cta" onclick="go('done')">できた！つぎへ →</button>
+      <button class="cta" onclick="go('done')">次へ →</button>
     </div>
   </section>
 
@@ -608,14 +599,18 @@ h1,h2,h3,.display{
   <section class="screen" data-screen="done">
     <div class="confetti-emoji">🎉</div>
     <h2 style="text-align:center;">完成！</h2>
-    <p class="lead" style="text-align:center;">これからは、思いついたことを<br>一言残すだけ。<br>くだらないことでもOKです。</p>
+    <p class="lead" style="text-align:center;">今日から、思いついたことを<br>一言残すだけです。</p>
+    <div class="home-mic-row" style="margin:22px 0;">
+      <button class="home-mic-btn" onclick="go('home')"><span class="ic">🎙</span>話す</button>
+      <button class="home-mic-btn alt" onclick="go('home')"><span class="ic">⌨</span>書く</button>
+    </div>
     <div class="stat-row">
       <div class="stat"><b>1</b><span>残したメモ</span></div>
       <div class="stat"><b>0円</b><span>かかった費用</span></div>
       <div class="stat"><b>あなた</b><span>だけのデータ</span></div>
     </div>
     <div class="step-actions">
-      <button class="cta" onclick="go('home')">🎙 ホーム画面を見てみる →</button>
+      <button class="cta" onclick="go('home')">ホーム画面を見てみる →</button>
     </div>
   </section>
 
@@ -724,8 +719,11 @@ const demoReplies = [
 ];
 function sampleReply(){
   const bubble = document.getElementById('replyBubble');
-  bubble.textContent = demoReplies[0];
+  bubble.textContent = demoReplies[Math.floor(Math.random()*demoReplies.length)];
+  bubble.classList.remove('show');
+  void bubble.offsetWidth;
   bubble.classList.add('show');
+  document.getElementById('futureNote').style.display = 'block';
   document.getElementById('finishActions').style.display = 'flex';
 }
 </script>
