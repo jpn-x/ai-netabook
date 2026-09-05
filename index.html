@@ -131,7 +131,7 @@ h1,h2,h3,.display{
 
 .screen{display:none;padding:14px 20px 10px;animation:fadein .35s ease both;}
 .screen.active{display:flex;flex-direction:column;flex:1;min-height:0;}
-.home-center{margin:auto 0;width:100%;}
+.screen-center{margin:auto 0;width:100%;}
 @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 @media (prefers-reduced-motion:reduce){.screen{animation:none;}}
 
@@ -647,26 +647,28 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
 
   <!-- 8: 完成 -->
   <section class="screen" data-screen="done">
-    <div class="confetti-emoji">🎉</div>
-    <h2 style="text-align:center;">完成！</h2>
-    <p class="lead" style="text-align:center;">今日から、思いついたことを<br>一言残すだけです。</p>
-    <div class="home-mic-row" style="margin:22px 0;">
-      <button class="home-mic-btn" onclick="openCompose('free')"><span class="ic">🎙</span>話す</button>
-      <button class="home-mic-btn alt" onclick="openCompose('free')"><span class="ic">⌨</span>書く</button>
-    </div>
-    <div class="stat-row">
-      <div class="stat"><b id="doneNoteCount">1</b><span>残したメモ</span></div>
-      <div class="stat"><b>0円</b><span>かかった費用</span></div>
-      <div class="stat"><b>あなた</b><span>だけのデータ</span></div>
-    </div>
-    <div class="step-actions">
-      <button class="cta" onclick="go('home')">ホーム画面を見てみる →</button>
+    <div class="screen-center">
+      <div class="confetti-emoji">🎉</div>
+      <h2 style="text-align:center;">完成！</h2>
+      <p class="lead" style="text-align:center;">今日から、思いついたことを<br>一言残すだけです。</p>
+      <div class="home-mic-row" style="margin:22px 0;">
+        <button class="home-mic-btn" onclick="openCompose('free')"><span class="ic">🎙</span>話す</button>
+        <button class="home-mic-btn alt" onclick="openCompose('free')"><span class="ic">⌨</span>書く</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b id="doneNoteCount">1</b><span>残したメモ</span></div>
+        <div class="stat"><b>0円</b><span>かかった費用</span></div>
+        <div class="stat"><b>あなた</b><span>だけのデータ</span></div>
+      </div>
+      <div class="step-actions">
+        <button class="cta" onclick="go('home')">ホーム画面を見てみる →</button>
+      </div>
     </div>
   </section>
 
   <!-- 9: 通常ホーム(登録完了後のデフォルトTOP) -->
   <section class="screen" data-screen="home">
-    <div class="home-center">
+    <div class="screen-center">
       <div class="home-mock">
         <div class="home-greet">今日、何かあった？</div>
         <div class="home-mic-row">
@@ -684,81 +686,91 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
 
   <!-- 10: 一言を残す（ホーム/今日のひとネタ共通） -->
   <section class="screen" data-screen="compose">
-    <p class="eyebrow" id="composeEyebrow">💬 一言</p>
-    <h2 id="composeTitle">今日、何かあった？</h2>
-    <p class="lead" id="composeLead">くだらないことでもOKです。</p>
-    <div class="input-tabs">
-      <div class="input-tab selected" id="composeTabMic" onclick="composeSelectTab('mic')"><span class="big">🎙</span>話す</div>
-      <div class="input-tab" id="composeTabText" onclick="composeSelectTab('text')"><span class="big">⌨</span>書く</div>
-    </div>
-    <div id="composeMicPane">
-      <button class="mic-btn" id="composeMicBtn" onclick="handleMicTap('compose')" aria-label="タップして話す">🎙</button>
-      <div class="mic-hint" id="composeMicHint">タップして、ひとこと話しかけてみましょう</div>
-    </div>
-    <div id="composeTextPane" style="display:none;">
-      <textarea class="note-area" id="composeTextarea" placeholder="例）今日ツナおにぎり食べた" aria-label="一言を入力"></textarea>
-      <div class="step-actions" style="margin-top:12px;">
-        <button class="cta" onclick="handleTextSave('compose')">これでOK</button>
+    <div class="screen-center">
+      <p class="eyebrow" id="composeEyebrow">💬 一言</p>
+      <h2 id="composeTitle">今日、何かあった？</h2>
+      <p class="lead" id="composeLead">くだらないことでもOKです。</p>
+      <div class="input-tabs">
+        <div class="input-tab selected" id="composeTabMic" onclick="composeSelectTab('mic')"><span class="big">🎙</span>話す</div>
+        <div class="input-tab" id="composeTabText" onclick="composeSelectTab('text')"><span class="big">⌨</span>書く</div>
       </div>
-    </div>
-    <div class="reply-bubble" id="composeBubble" aria-live="polite"></div>
-    <p class="helper-note" id="composeFutureNote" style="display:none;">残りました。また何か思いついたら、いつでもどうぞ。</p>
-    <div class="step-actions" id="composeFinishActions" style="display:none;">
-      <button class="cta" onclick="go('notebook')">ネタ帳を見る →</button>
-      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+      <div id="composeMicPane">
+        <button class="mic-btn" id="composeMicBtn" onclick="handleMicTap('compose')" aria-label="タップして話す">🎙</button>
+        <div class="mic-hint" id="composeMicHint">タップして、ひとこと話しかけてみましょう</div>
+      </div>
+      <div id="composeTextPane" style="display:none;">
+        <textarea class="note-area" id="composeTextarea" placeholder="例）今日ツナおにぎり食べた" aria-label="一言を入力"></textarea>
+        <div class="step-actions" style="margin-top:12px;">
+          <button class="cta" onclick="handleTextSave('compose')">これでOK</button>
+        </div>
+      </div>
+      <div class="reply-bubble" id="composeBubble" aria-live="polite"></div>
+      <p class="helper-note" id="composeFutureNote" style="display:none;">残りました。また何か思いついたら、いつでもどうぞ。</p>
+      <div class="step-actions" id="composeFinishActions" style="display:none;">
+        <button class="cta" onclick="go('notebook')">ネタ帳を見る →</button>
+        <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+      </div>
     </div>
   </section>
 
   <!-- 11: 今週のメモ（旧: AIからの発見） -->
   <section class="screen" data-screen="discovery">
-    <p class="eyebrow">✨ 今週のメモ</p>
-    <h2>たまったメモを、<br>ふりかえってみましょう。</h2>
-    <div id="discoveryBody"></div>
-    <div class="step-actions">
-      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    <div class="screen-center">
+      <p class="eyebrow">✨ 今週のメモ</p>
+      <h2>たまったメモを、<br>ふりかえってみましょう。</h2>
+      <div id="discoveryBody"></div>
+      <div class="step-actions">
+        <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+      </div>
     </div>
   </section>
 
   <!-- 12: ネタ帳 -->
   <section class="screen" data-screen="notebook">
-    <p class="eyebrow">📚 ネタ帳</p>
-    <h2>これまでの一言</h2>
-    <div id="notebookBody"></div>
-    <div class="step-actions" id="notebookWorkshopCta" style="display:none;">
-      <a class="cta secondary" href="/workshop/" style="display:block;text-align:center;border:1px solid var(--line);">🏭 このメモをAIに見てもらう</a>
-    </div>
-    <div class="step-actions">
-      <button class="cta" onclick="openCompose('free')">🎙 もう一言残す</button>
-      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    <div class="screen-center">
+      <p class="eyebrow">📚 ネタ帳</p>
+      <h2>これまでの一言</h2>
+      <div id="notebookBody"></div>
+      <div class="step-actions" id="notebookWorkshopCta" style="display:none;">
+        <a class="cta secondary" href="/workshop/" style="display:block;text-align:center;border:1px solid var(--line);">🏭 このメモをAIに見てもらう</a>
+      </div>
+      <div class="step-actions">
+        <button class="cta" onclick="openCompose('free')">🎙 もう一言残す</button>
+        <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+      </div>
     </div>
   </section>
 
   <!-- 13: AIに、どう聞いてみる？(目的選択) -->
   <section class="screen" data-screen="aipurpose">
-    <p class="eyebrow">🤖 AIに見てもらう</p>
-    <h2>AIに、<br>どう聞いてみる？</h2>
-    <p class="lead">気になるものをひとつ選んでください。</p>
-    <div id="purposeGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
-    <div class="step-actions" style="margin-top:24px;">
-      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    <div class="screen-center">
+      <p class="eyebrow">🤖 AIに見てもらう</p>
+      <h2>AIに、<br>どう聞いてみる？</h2>
+      <p class="lead">気になるものをひとつ選んでください。</p>
+      <div id="purposeGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+      <div class="step-actions" style="margin-top:24px;">
+        <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+      </div>
     </div>
   </section>
 
   <!-- 14: AI用プロンプト生成結果 -->
   <section class="screen" data-screen="aiprompt">
-    <p class="eyebrow" id="aiPromptEyebrow">🧠 AIに見てもらう</p>
-    <h2>これを、<br>AIに貼ってください。</h2>
-    <p class="lead">コピーして、好きなAIに貼るだけです。<br>このまとめ作業に外部AIは使っていません。</p>
-    <div class="card" id="aiSummaryCard"></div>
-    <textarea class="note-area" id="aiPromptText" style="min-height:220px;font-size:13px;" readonly aria-label="AI用プロンプト"></textarea>
-    <div class="step-actions">
-      <button class="cta" onclick="copyPrompt()">📋 プロンプトをコピー</button>
-    </div>
-    <p class="helper-note" id="copyStatus" style="margin-top:14px;">好きなAIを選んでください。タップすると自動でコピーして開きます。</p>
-    <div id="aiServiceButtons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;"></div>
-    <div class="step-actions" style="margin-top:24px;">
-      <button class="cta secondary" onclick="go('aipurpose')">別の目的で作り直す</button>
-      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    <div class="screen-center">
+      <p class="eyebrow" id="aiPromptEyebrow">🧠 AIに見てもらう</p>
+      <h2>これを、<br>AIに貼ってください。</h2>
+      <p class="lead">コピーして、好きなAIに貼るだけです。<br>このまとめ作業に外部AIは使っていません。</p>
+      <div class="card" id="aiSummaryCard"></div>
+      <textarea class="note-area" id="aiPromptText" style="min-height:220px;font-size:13px;" readonly aria-label="AI用プロンプト"></textarea>
+      <div class="step-actions">
+        <button class="cta" onclick="copyPrompt()">📋 プロンプトをコピー</button>
+      </div>
+      <p class="helper-note" id="copyStatus" style="margin-top:14px;">好きなAIを選んでください。タップすると自動でコピーして開きます。</p>
+      <div id="aiServiceButtons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;"></div>
+      <div class="step-actions" style="margin-top:24px;">
+        <button class="cta secondary" onclick="go('aipurpose')">別の目的で作り直す</button>
+        <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+      </div>
     </div>
   </section>
 
