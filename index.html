@@ -724,35 +724,45 @@ function renderTimeOptions(){
     </label>`).join('');
 }
 renderTimeOptions();
-function saveNotifyPreference(){
+/* ===================================================================
+   通知: Service Worker + Push API による、タブを閉じていても届く通知。
+   対応していないブラウザ・端末(例: iOSのSafariをホーム画面に追加していない場合)では
+   静かに失敗させ、技術的なエラーは一切見せない。
+   =================================================================== */
+const VAPID_PUBLIC_KEY = 'BMLrx8cWrIVvLppcEqL2u4oEC8gjYFUkT5WCMGEdTgL5NcQaJ3oMzp4RreuiZrfxxsVeTsZ4fAgTXUFpiBhceao';
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw = atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+async function saveNotifyPreference(){
   const picked = document.querySelector('input[name="tm"]:checked');
   const slot = picked ? picked.value : 'おまかせ';
   localStorage.setItem('ai-netabook-notify-slot', slot);
-  if('Notification' in window && Notification.permission === 'default'){
-    Notification.requestPermission();
-  }
-}
-function checkGentleReminder(){
   try{
-    if(!('Notification' in window) || Notification.permission !== 'granted') return;
-    const slot = localStorage.getItem('ai-netabook-notify-slot');
-    if(!slot) return;
-    const win = TIME_WINDOWS[slot] || TIME_WINDOWS['おまかせ'];
-    const hour = new Date().getHours();
-    if(hour < win[0] || hour >= win[1]) return;
-    const today = new Date().toDateString();
-    const notes = Storage.getAll();
-    const postedToday = notes.some(n => new Date(n.timestamp).toDateString() === today);
-    if(postedToday) return;
-    const lastPing = localStorage.getItem('ai-netabook-last-ping');
-    if(lastPing === today) return;
-    localStorage.setItem('ai-netabook-last-ping', today);
-    const msgs = ['今日、何かあった？','今日の一言、まだありません。','どうでもいいことでOK。','今日は一問だけどうぞ。'];
-    new Notification('スーパーAIネタ帳', { body: msgs[Math.floor(Math.random()*msgs.length)] });
-  }catch(e){ /* 通知が使えない環境では静かに諦める */ }
+    if(!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+    let permission = Notification.permission;
+    if(permission === 'default') permission = await Notification.requestPermission();
+    if(permission !== 'granted') return;
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    await fetch(AI_PROXY_URL + '/subscribe', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ subscription: sub.toJSON(), slot })
+    });
+  }catch(e){ /* 非対応環境や拒否時は静かに諦める。テキスト/音声入力は通常どおり使える */ }
 }
-setInterval(checkGentleReminder, 5*60*1000);
-window.addEventListener('load', checkGentleReminder);
 
 const RENDER_HOOKS = {
   discovery: renderDiscoveryScreen,
