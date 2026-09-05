@@ -447,6 +447,29 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
   text-align:center;font-size:11.5px;color:var(--ink-soft);
   padding:20px 24px 4px;line-height:1.8;
 }
+
+.tabbar{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  max-width:480px;margin:0 auto;
+  background:var(--paper);
+  border-top:1px solid var(--line);
+  box-shadow:0 -4px 16px var(--shadow);
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  gap:6px;
+  z-index:30;
+}
+.tabbar.show{display:flex;}
+.stage.with-tabbar{padding-bottom:76px;}
+.tab-btn{
+  flex:1;border:none;background:transparent;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-family:inherit;font-size:11px;color:var(--ink-soft);font-weight:700;
+  padding:6px 4px;border-radius:12px;cursor:pointer;text-decoration:none;
+}
+.tab-btn .tab-ic{font-size:19px;}
+.tab-btn.active{color:var(--coral);background:var(--yellow-soft);}
+.tab-btn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
 </style>
 
 <div class="toast" id="toast" aria-live="polite">✓ できました</div>
@@ -633,10 +656,8 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     </div>
   </section>
 
-  <!-- 9: 完成後ホーム -->
+  <!-- 9: 通常ホーム(登録完了後のデフォルトTOP) -->
   <section class="screen" data-screen="home">
-    <p class="eyebrow">これが毎日使う画面</p>
-    <h2>今日からは<br>これだけ見ればOK</h2>
     <div class="home-mock">
       <div class="home-greet">今日、何かあった？</div>
       <div class="home-mic-row">
@@ -646,10 +667,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
       <button class="home-tile" onclick="openCompose('topic')"><span class="ic">💡</span><div>今日のひとネタ<small>1問だけ、気軽にどうぞ</small></div></button>
       <button class="home-tile mint" onclick="go('discovery')"><span class="ic">✨</span><div>AIからの発見<small>たまったら、AIに見てもらえます</small></div></button>
       <button class="home-tile" onclick="go('notebook')"><span class="ic">📚</span><div>ネタ帳<small id="homeNoteCount">これまでの一言、ぜんぶここに</small></div></button>
-    </div>
-    <p class="lead" style="margin-top:22px;">数日後、AIが「これとこれ、つながってます」と教えてくれます。<br>それまでは、ただ一言残すだけでOK。</p>
-    <div class="step-actions">
-      <button class="cta secondary" onclick="go('top')">最初からもう一度見る</button>
+      <a class="home-tile" href="/workshop/" style="text-decoration:none;"><span class="ic">🏭</span><div>プロンプト工房<small>好きなAIに渡す準備をします</small></div></a>
     </div>
     <p class="footer-note">あなたのメモは、この端末のブラウザの中だけに残ります。<br>外部のサーバーへは送信・保存されません。</p>
   </section>
@@ -730,6 +748,12 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
       <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
     </div>
   </section>
+
+  <nav class="tabbar" id="tabbar" aria-label="ナビゲーション">
+    <button class="tab-btn" id="tabHome" onclick="go('home')"><span class="tab-ic">🏠</span>ホーム</button>
+    <button class="tab-btn" id="tabNotebook" onclick="go('notebook')"><span class="tab-ic">📚</span>ネタ帳</button>
+    <a class="tab-btn" id="tabWorkshop" href="/workshop/"><span class="tab-ic">🏭</span>工房</a>
+  </nav>
 </div>
 
 <script>
@@ -801,7 +825,21 @@ const RENDER_HOOKS = {
   done: renderDoneStats,
   home: renderHomeStats
 };
+/* ===================================================================
+   未登録/登録済みの状態管理。
+   登録完了(=タップ式教科書を終えた)フラグを永続化し、
+   一度完了したユーザーには二度とセットアップ画面を見せない。
+   =================================================================== */
+const SETUP_COMPLETE_KEY = 'ai-netabook-setup-complete';
+const SETUP_SCREENS = new Set(['top','intro','check','step1','step2','step3','step4','firstinput','done']);
+const HUB_SCREENS = new Set(['home','notebook','discovery','compose','aipurpose','aiprompt']);
+function isSetupComplete(){ return localStorage.getItem(SETUP_COMPLETE_KEY) === '1'; }
+function markSetupComplete(){ localStorage.setItem(SETUP_COMPLETE_KEY, '1'); }
+
 function go(name, opts){
+  if(isSetupComplete() && SETUP_SCREENS.has(name)) name = 'home';
+  if(name === 'done') markSetupComplete();
+  if(name === 'home') history = [];
   const current = document.querySelector('.screen.active');
   const cameFromStep = current && current.hasAttribute('data-step');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -821,9 +859,13 @@ function showToast(){
   showToast._timer = setTimeout(()=>t.classList.remove('show'), 1400);
 }
 function back(){
-  if(history.length<2) return;
+  if(history.length<2){
+    if(isSetupComplete()) go('home', {silent:true});
+    return;
+  }
   history.pop();
-  const prev = history[history.length-1];
+  let prev = history[history.length-1];
+  if(isSetupComplete() && SETUP_SCREENS.has(prev)) prev = 'home';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const target = document.querySelector(`.screen[data-screen="${prev}"]`);
   target.classList.add('active');
@@ -831,18 +873,31 @@ function back(){
   history.push(prev);
   updateChrome(target);
   window.scrollTo(0,0);
+  if(RENDER_HOOKS[prev]) RENDER_HOOKS[prev]();
 }
 function updateChrome(target){
   const step = target.getAttribute('data-step');
   const wrap = document.getElementById('progressWrap');
   const backBtn = document.getElementById('backBtn');
-  backBtn.classList.toggle('show', history.length>1 && target.dataset.screen!=='top');
+  const screenName = target.dataset.screen;
+  backBtn.classList.toggle('show', history.length>1 && screenName!=='top');
   if(step){
     wrap.classList.add('show');
     document.getElementById('progressLabel').textContent = `STEP ${step} / ${totalSteps}`;
     document.getElementById('progressFill').style.width = (step/totalSteps*100)+'%';
   } else {
     wrap.classList.remove('show');
+  }
+  const tabbar = document.getElementById('tabbar');
+  const stage = document.getElementById('stage');
+  if(HUB_SCREENS.has(screenName)){
+    tabbar.classList.add('show');
+    stage.classList.add('with-tabbar');
+    document.getElementById('tabHome').classList.toggle('active', screenName==='home');
+    document.getElementById('tabNotebook').classList.toggle('active', screenName==='notebook');
+  }else{
+    tabbar.classList.remove('show');
+    stage.classList.remove('with-tabbar');
   }
 }
 document.getElementById('backBtn').addEventListener('click', back);
@@ -884,6 +939,20 @@ const Storage = {
     notes.unshift(note);
     this.save(notes);
     return note;
+  },
+  updateNote(id, text){
+    const notes = this.getAll();
+    const note = notes.find(n=>n.id===id);
+    if(!note) return null;
+    note.text = text;
+    note.category = AIEngine.categorize(text);
+    note.keywords = AIEngine.extractKeywords(text);
+    this.save(notes);
+    return note;
+  },
+  deleteNote(id){
+    const notes = this.getAll().filter(n=>n.id!==id);
+    this.save(notes);
   }
 };
 
@@ -1153,11 +1222,46 @@ function renderNotebookScreen(){
     return;
   }
   body.innerHTML = notes.map(n=>`
-    <div class="note-card">
-      <p class="note-meta">${formatDate(n.timestamp)}${n.category ? ' ・ '+escapeHtml(n.category) : ''}${n.inputType==='voice' ? ' ・ 🎙' : ' ・ ⌨'}</p>
-      <p class="note-text">${escapeHtml(n.text)}</p>
+    <div class="note-card" id="note-${n.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <p class="note-meta" style="margin-bottom:8px;">${formatDate(n.timestamp)}${n.category ? ' ・ '+escapeHtml(n.category) : ''}${n.inputType==='voice' ? ' ・ 🎙' : ' ・ ⌨'}</p>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button onclick="editNoteStart('${n.id}')" aria-label="編集" style="border:none;background:none;font-size:15px;cursor:pointer;padding:2px 4px;">✏️</button>
+          <button onclick="deleteNoteConfirm('${n.id}')" aria-label="削除" style="border:none;background:none;font-size:15px;cursor:pointer;padding:2px 4px;">🗑️</button>
+        </div>
+      </div>
+      <p class="note-text" id="note-text-${n.id}">${escapeHtml(n.text)}</p>
       <p class="note-reaction">${escapeHtml(n.reaction||'')}</p>
     </div>`).join('');
+}
+function editNoteStart(id){
+  const notes = Storage.getAll();
+  const note = notes.find(n=>n.id===id);
+  if(!note) return;
+  const el = document.getElementById('note-text-'+id);
+  el.outerHTML = `
+    <div id="note-text-${id}">
+      <textarea class="note-area" id="edit-input-${id}" style="min-height:70px;font-size:14px;margin-bottom:8px;">${escapeHtml(note.text)}</textarea>
+      <div style="display:flex;gap:8px;">
+        <button class="cta" style="padding:10px 16px;font-size:13px;" onclick="editNoteSave('${id}')">保存する</button>
+        <button class="cta secondary" style="padding:10px 16px;font-size:13px;" onclick="renderNotebookScreen()">やめる</button>
+      </div>
+    </div>`;
+  document.getElementById('edit-input-'+id).focus();
+}
+function editNoteSave(id){
+  const input = document.getElementById('edit-input-'+id);
+  const text = input.value.trim();
+  if(!text) return;
+  Storage.updateNote(id, text);
+  renderNotebookScreen();
+  renderHomeStats();
+}
+function deleteNoteConfirm(id){
+  if(!confirm('このメモを削除しますか？元に戻せません。')) return;
+  Storage.deleteNote(id);
+  renderNotebookScreen();
+  renderHomeStats();
 }
 const AI_PROXY_URL = 'https://ai-netabook-proxy.cadillac600.workers.dev';
 
@@ -1360,4 +1464,19 @@ function renderHomeStats(){
   const n = Storage.getAll().length;
   el.textContent = n>0 ? `これまでに${n}個の一言` : 'これまでの一言、ぜんぶここに';
 }
+
+/* ===================================================================
+   初期ルーティング: 登録(タップ式教科書)が完了済みなら、
+   / を開いた瞬間に必ず通常ホームを表示する。セットアップ画面は経由しない。
+   =================================================================== */
+(function initRouting(){
+  if(isSetupComplete()){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const homeEl = document.querySelector('.screen[data-screen="home"]');
+    homeEl.classList.add('active');
+    history = ['home'];
+    updateChrome(homeEl);
+    renderHomeStats();
+  }
+})();
 </script>
