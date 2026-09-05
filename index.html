@@ -584,7 +584,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
       </div>
     </div>
     <div class="step-actions">
-      <button class="cta" onclick="go('firstinput')">次へ →</button>
+      <button class="cta" onclick="saveNotifyPreference();go('firstinput')">次へ →</button>
     </div>
   </section>
 
@@ -708,6 +708,10 @@ const order = ['top','intro','check','step1','step2','step3','step4','firstinput
 const totalSteps = 6;
 let history = ['top'];
 
+const TIME_WINDOWS = {
+  'お昼ごろ': [11,14], '午後': [14,17], '夕方': [17,19],
+  '夜': [19,22], '寝る前': [21,24], 'おまかせ': [11,22]
+};
 function renderTimeOptions(){
   const opts = [
     ['お昼ごろ','☀️'],['午後','🌤'],['夕方','🌇'],['夜','🌙'],['寝る前','😴'],['おまかせ','🤝']
@@ -715,11 +719,40 @@ function renderTimeOptions(){
   const wrap = document.getElementById('timeOptions');
   wrap.innerHTML = opts.map((o,i)=>`
     <label style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;cursor:pointer;${i===5?'background:var(--yellow-soft);':''}">
-      <input type="radio" name="tm" ${i===5?'checked':''} style="width:18px;height:18px;accent-color:var(--coral);">
+      <input type="radio" name="tm" value="${o[0]}" ${i===5?'checked':''} style="width:18px;height:18px;accent-color:var(--coral);">
       <span style="font-size:15px;">${o[1]} ${o[0]}</span>
     </label>`).join('');
 }
 renderTimeOptions();
+function saveNotifyPreference(){
+  const picked = document.querySelector('input[name="tm"]:checked');
+  const slot = picked ? picked.value : 'おまかせ';
+  localStorage.setItem('ai-netabook-notify-slot', slot);
+  if('Notification' in window && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+}
+function checkGentleReminder(){
+  try{
+    if(!('Notification' in window) || Notification.permission !== 'granted') return;
+    const slot = localStorage.getItem('ai-netabook-notify-slot');
+    if(!slot) return;
+    const win = TIME_WINDOWS[slot] || TIME_WINDOWS['おまかせ'];
+    const hour = new Date().getHours();
+    if(hour < win[0] || hour >= win[1]) return;
+    const today = new Date().toDateString();
+    const notes = Storage.getAll();
+    const postedToday = notes.some(n => new Date(n.timestamp).toDateString() === today);
+    if(postedToday) return;
+    const lastPing = localStorage.getItem('ai-netabook-last-ping');
+    if(lastPing === today) return;
+    localStorage.setItem('ai-netabook-last-ping', today);
+    const msgs = ['今日、何かあった？','今日の一言、まだありません。','どうでもいいことでOK。','今日は一問だけどうぞ。'];
+    new Notification('スーパーAIネタ帳', { body: msgs[Math.floor(Math.random()*msgs.length)] });
+  }catch(e){ /* 通知が使えない環境では静かに諦める */ }
+}
+setInterval(checkGentleReminder, 5*60*1000);
+window.addEventListener('load', checkGentleReminder);
 
 const RENDER_HOOKS = {
   discovery: renderDiscoveryScreen,
@@ -1085,30 +1118,80 @@ function renderNotebookScreen(){
       <p class="note-reaction">${escapeHtml(n.reaction||'')}</p>
     </div>`).join('');
 }
-function renderDiscoveryScreen(){
+const AI_PROXY_URL = 'https://ai-netabook-proxy.cadillac600.workers.dev';
+
+function renderWeekSummaryHtml(notes){
+  if(notes.length < 7) return '';
+  const now = Date.now();
+  const weekNotes = notes.filter(n => now - n.timestamp <= 7*24*60*60*1000);
+  const target = weekNotes.length >= 5 ? weekNotes : notes.slice(0, Math.min(14, notes.length));
+  const counts = {};
+  target.forEach(n=>{ if(n.category) counts[n.category] = (counts[n.category]||0)+1; });
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).filter(([,c])=>c>=2).slice(0,3).map(([c])=>c);
+  const topText = top.length ? `${top.join('、')}についての記録が多くありました。` : '';
+  return `<div class="card">
+    <p style="margin:0 0 8px;font-weight:700;">🗓️ 最近の一週間</p>
+    <p style="margin:0;font-size:14.5px;line-height:1.85;color:var(--ink-soft);">今週は${target.length}個の一言が残っています。${topText}</p>
+  </div>`;
+}
+async function tryRemoteDiscovery(notes){
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), 6000);
+    const res = await fetch(AI_PROXY_URL + '/discover', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ notes: notes.slice(0,30).map(n=>({text:n.text, date:formatDate(n.timestamp)})) }),
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if(!res.ok) return null; // 未設定(501)や一時エラーはローカルAIへ静かにフォールバック
+    return await res.json();
+  }catch(e){ return null; }
+}
+function localDiscoveryHtml(notes){
+  const discovery = AIEngine.generateDiscovery(notes);
+  if(!discovery) return '<div class="empty-card">まだ大きな発見はありません。<br>メモがもう少したまると、ここに出てきます。</div>';
+  const chips = discovery.notes.map(n=>`<div class="demo-chip">${escapeHtml(clipText(n.text,16))}</div>`).join('');
+  return `<div class="card">
+    <p style="margin:0 0 10px;font-weight:700;">見つかったつながり</p>
+    <div class="demo-strip" style="padding:0 0 12px;">${chips}</div>
+    <p style="margin:0;font-size:14.5px;line-height:1.85;">${escapeHtml(discovery.text)}</p>
+  </div>`;
+}
+async function renderDiscoveryScreen(){
   const notes = Storage.getAll();
   const body = document.getElementById('discoveryBody');
   const honor = AIEngine.honorMention(notes);
-  const discovery = AIEngine.generateDiscovery(notes);
-  let html = '';
-  if(honor){
-    html += `<div class="card">
+  const weekHtml = renderWeekSummaryHtml(notes);
+  const honorHtml = honor ? `<div class="card">
       <p style="margin:0 0 8px;font-weight:700;">🔁 この話、そろそろ殿堂入りです。</p>
       <p style="margin:0;font-size:14px;color:var(--ink-soft);line-height:1.8;">「${escapeHtml(honor.keyword)}」、${honor.count}回登場しています。次は少し違う角度から話してみませんか？</p>
-    </div>`;
+    </div>` : '';
+
+  if(notes.length < 3){
+    body.innerHTML = weekHtml + honorHtml || '<div class="empty-card">まだ発見はありません。<br>メモがもう少したまると、ここに出てきます。</div>';
+    if(!weekHtml && !honorHtml) body.innerHTML = '<div class="empty-card">まだ発見はありません。<br>メモがもう少したまると、ここに出てきます。</div>';
+    return;
   }
-  if(discovery){
-    const chips = discovery.notes.map(n=>`<div class="demo-chip">${escapeHtml(clipText(n.text,16))}</div>`).join('');
-    html += `<div class="card">
+
+  body.innerHTML = weekHtml + honorHtml + '<div class="empty-card" id="discoveryLoading">考えています…</div>';
+  const remote = await tryRemoteDiscovery(notes);
+  const loadingEl = document.getElementById('discoveryLoading');
+  if(!loadingEl) return; // 別画面へ移動済み
+
+  if(remote && remote.hasDiscovery && remote.text){
+    const related = (remote.relatedIndexes||[]).map(i=>notes[i-1]).filter(Boolean);
+    const chips = (related.length ? related : notes.slice(0,4)).map(n=>`<div class="demo-chip">${escapeHtml(clipText(n.text,16))}</div>`).join('');
+    loadingEl.outerHTML = `<div class="card">
       <p style="margin:0 0 10px;font-weight:700;">見つかったつながり</p>
       <div class="demo-strip" style="padding:0 0 12px;">${chips}</div>
-      <p style="margin:0;font-size:14.5px;line-height:1.85;">${escapeHtml(discovery.text)}</p>
+      <p style="margin:0;font-size:14.5px;line-height:1.85;">${escapeHtml(remote.text)}</p>
+      <p style="margin:8px 0 0;font-size:11px;color:var(--ink-soft);">✨ AIが考えました</p>
     </div>`;
+  }else{
+    loadingEl.outerHTML = localDiscoveryHtml(notes);
   }
-  if(!html){
-    html = `<div class="empty-card">まだ発見はありません。<br>メモがもう少したまると、ここに出てきます。</div>`;
-  }
-  body.innerHTML = html;
 }
 function clipText(t,n){ return t.length>n ? t.slice(0,n)+'…' : t; }
 function renderDoneStats(){
