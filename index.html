@@ -1,0 +1,702 @@
+<meta charset="utf-8">
+<title>スーパーAIネタ帳</title>
+<meta name="description" content="自分のGoogleアカウントだけで作る、自分専用AIネタ帳のタップ式教科書">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{
+  --cream:#FBF6EC;
+  --paper:#FFFCF6;
+  --ink:#3A332B;
+  --ink-soft:#8A7E70;
+  --coral:#FF6F47;
+  --coral-deep:#E85A34;
+  --mint:#2FA891;
+  --mint-soft:#E4F5F1;
+  --yellow:#FFC94A;
+  --yellow-soft:#FFF3D6;
+  --line:#EDE2CE;
+  --shadow:rgba(58,51,43,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --cream:#221D18;
+    --paper:#2B241D;
+    --ink:#F3EAE0;
+    --ink-soft:#B7A996;
+    --coral:#FF8A63;
+    --coral-deep:#FFA47E;
+    --mint:#4FCBB2;
+    --mint-soft:#1E332F;
+    --yellow:#FFD066;
+    --yellow-soft:#3A2F1C;
+    --line:#3C332A;
+    --shadow:rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --cream:#221D18;
+  --paper:#2B241D;
+  --ink:#F3EAE0;
+  --ink-soft:#B7A996;
+  --coral:#FF8A63;
+  --coral-deep:#FFA47E;
+  --mint:#4FCBB2;
+  --mint-soft:#1E332F;
+  --yellow:#FFD066;
+  --yellow-soft:#3A2F1C;
+  --line:#3C332A;
+  --shadow:rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{
+  font-family:"Zen Maru Gothic","Zen Kaku Gothic New",sans-serif;
+  text-wrap:balance;
+}
+.stage{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100dvh;
+  padding:0 0 40px;
+  position:relative;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 18px;
+  position:sticky;
+  top:0;
+  background:linear-gradient(var(--cream) 70%, transparent);
+  z-index:20;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:700;
+  font-size:14px;
+  color:var(--ink-soft);
+}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--coral);}
+.back-btn{
+  border:none;
+  background:var(--paper);
+  color:var(--ink-soft);
+  width:36px;height:36px;
+  border-radius:50%;
+  font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px var(--shadow);
+  cursor:pointer;
+  visibility:hidden;
+}
+.back-btn.show{visibility:visible;}
+.progress-wrap{
+  padding:0 18px 6px;
+  display:none;
+  align-items:center;
+  gap:10px;
+}
+.progress-wrap.show{display:flex;}
+.progress-label{
+  font-size:11px;
+  color:var(--ink-soft);
+  font-weight:700;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.progress-track{
+  flex:1;
+  height:6px;
+  border-radius:99px;
+  background:var(--line);
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  border-radius:99px;
+  background:linear-gradient(90deg,var(--coral),var(--yellow));
+  transition:width .45s cubic-bezier(.4,0,.2,1);
+}
+
+.screen{display:none;padding:14px 20px 10px;animation:fadein .35s ease both;}
+.screen.active{display:block;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@media (prefers-reduced-motion:reduce){.screen{animation:none;}}
+
+/* ---- TOP ---- */
+.top-screen{padding-top:8vh;text-align:center;}
+.top-badge{
+  display:inline-block;
+  background:var(--yellow-soft);
+  color:var(--coral-deep);
+  font-size:12px;
+  font-weight:700;
+  padding:6px 14px;
+  border-radius:99px;
+  margin-bottom:22px;
+  letter-spacing:.02em;
+}
+.top-title{
+  font-size:38px;
+  font-weight:900;
+  line-height:1.25;
+  margin:0 0 14px;
+}
+.top-title .accent{color:var(--coral);}
+.top-sub{
+  font-size:16px;
+  color:var(--ink-soft);
+  line-height:1.9;
+  margin:0 0 36px;
+}
+.mock-phone{
+  width:200px;height:200px;
+  margin:0 auto 36px;
+  border-radius:32px;
+  background:var(--paper);
+  box-shadow:0 16px 40px var(--shadow);
+  display:flex;align-items:center;justify-content:center;
+  font-size:64px;
+  border:1px solid var(--line);
+}
+.cta{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background:var(--coral);
+  color:#fff;
+  border:none;
+  font-family:inherit;
+  font-weight:700;
+  font-size:18px;
+  padding:18px 34px;
+  border-radius:99px;
+  box-shadow:0 10px 24px -6px var(--coral-deep);
+  cursor:pointer;
+  width:100%;
+  justify-content:center;
+}
+.cta:active{transform:scale(.98);}
+.cta:focus-visible{outline:3px solid var(--yellow);outline-offset:3px;}
+.cta.secondary{
+  background:transparent;
+  color:var(--ink-soft);
+  box-shadow:none;
+  font-size:14px;
+  padding:10px;
+  font-weight:500;
+}
+.top-foot{
+  margin-top:14px;
+  font-size:12px;
+  color:var(--ink-soft);
+}
+
+/* ---- generic content screen ---- */
+.eyebrow{
+  font-size:12px;
+  font-weight:700;
+  color:var(--mint);
+  letter-spacing:.06em;
+  margin:0 0 8px;
+}
+.screen h2{
+  font-size:25px;
+  font-weight:900;
+  margin:0 0 14px;
+  line-height:1.4;
+}
+.screen p.lead{
+  font-size:15.5px;
+  line-height:1.85;
+  color:var(--ink);
+  margin:0 0 20px;
+}
+.card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 4px 16px var(--shadow);
+  margin-bottom:16px;
+}
+.check-list{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-direction:column;gap:10px;}
+.check-list li{
+  display:flex;align-items:center;gap:10px;
+  font-size:14.5px;color:var(--ink-soft);
+}
+.check-list li.done{color:var(--mint);font-weight:700;}
+.check-list .ico{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--paper);flex-shrink:0;
+}
+.check-list li.done .ico{background:var(--mint);color:#fff;}
+
+.tap-target{
+  position:relative;
+  border:2px dashed var(--coral);
+  border-radius:16px;
+  padding:16px;
+  background:var(--yellow-soft);
+  margin-bottom:18px;
+}
+.tap-target .tap-arrow{
+  position:absolute;top:-14px;right:18px;
+  background:var(--coral);color:#fff;
+  font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:99px;
+}
+.mock-google{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:14px;
+  font-size:13px;
+  color:var(--ink-soft);
+}
+.mock-google .mg-title{
+  display:flex;align-items:center;gap:8px;
+  font-weight:700;color:var(--ink);margin-bottom:10px;
+  font-size:14px;
+}
+.mock-google .mg-btn{
+  margin-top:10px;
+  display:inline-block;
+  background:#4285F4;color:#fff;
+  font-size:13px;font-weight:700;
+  padding:9px 16px;border-radius:8px;
+}
+.ss-placeholder{
+  border:2px dashed var(--line);
+  border-radius:14px;
+  padding:26px 14px;
+  text-align:center;
+  color:var(--ink-soft);
+  font-size:12.5px;
+  background:var(--paper);
+  margin-top:10px;
+  line-height:1.7;
+}
+
+.step-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px;}
+.helper-note{
+  font-size:12.5px;
+  color:var(--ink-soft);
+  text-align:center;
+  margin-top:14px;
+  line-height:1.8;
+}
+.helper-note button{
+  background:none;border:none;color:var(--mint);
+  font:inherit;font-weight:700;cursor:pointer;padding:0;
+  text-decoration:underline;text-underline-offset:2px;
+}
+
+/* trouble box */
+.trouble{
+  display:none;
+  margin-top:14px;
+  background:var(--mint-soft);
+  border-radius:14px;
+  padding:14px 16px;
+  font-size:13px;
+  color:var(--ink);
+  line-height:1.8;
+}
+.trouble.show{display:block;}
+
+/* input screen */
+.input-tabs{display:flex;gap:8px;margin-bottom:18px;}
+.input-tab{
+  flex:1;border:1px solid var(--line);background:var(--paper);
+  border-radius:14px;padding:16px 8px;text-align:center;
+  cursor:pointer;font-weight:700;font-size:13px;color:var(--ink-soft);
+}
+.input-tab .big{display:block;font-size:26px;margin-bottom:6px;}
+.input-tab.selected{border-color:var(--coral);background:var(--yellow-soft);color:var(--coral-deep);}
+.note-area{
+  width:100%;min-height:110px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  font-family:inherit;font-size:15px;
+  background:var(--paper);color:var(--ink);
+  resize:none;
+}
+.note-area:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
+.mic-btn{
+  width:96px;height:96px;border-radius:50%;
+  background:var(--coral);color:#fff;
+  border:none;font-size:34px;
+  margin:10px auto 6px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 24px -6px var(--coral-deep);
+  cursor:pointer;
+}
+.mic-hint{text-align:center;font-size:13px;color:var(--ink-soft);margin-bottom:20px;}
+
+.reply-bubble{
+  display:none;
+  background:var(--mint-soft);
+  border-radius:18px 18px 18px 4px;
+  padding:16px 18px;
+  font-size:15px;
+  color:var(--ink);
+  font-weight:700;
+  margin:18px 0;
+  line-height:1.7;
+}
+.reply-bubble.show{display:block;animation:pop .3s ease;}
+@keyframes pop{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* completion */
+.confetti-emoji{font-size:56px;text-align:center;margin-bottom:6px;}
+.stat-row{display:flex;gap:12px;margin:20px 0;}
+.stat{
+  flex:1;background:var(--paper);border:1px solid var(--line);
+  border-radius:16px;padding:14px;text-align:center;
+}
+.stat b{display:block;font-size:22px;color:var(--coral);font-variant-numeric:tabular-nums;}
+.stat span{font-size:11px;color:var(--ink-soft);}
+
+/* home mock */
+.home-mock{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:28px;
+  padding:26px 20px;
+  box-shadow:0 10px 30px var(--shadow);
+}
+.home-greet{font-size:19px;font-weight:900;text-align:center;margin-bottom:22px;}
+.home-mic-row{display:flex;gap:14px;margin-bottom:18px;}
+.home-mic-btn{
+  flex:1;background:var(--coral);color:#fff;border:none;border-radius:20px;
+  padding:22px 10px;font-weight:700;font-size:14px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.home-mic-btn.alt{background:var(--ink);color:var(--paper);}
+.home-mic-btn .ic{font-size:26px;}
+.home-tile{
+  display:flex;align-items:center;gap:12px;
+  background:var(--yellow-soft);
+  border-radius:16px;padding:14px 16px;margin-bottom:10px;
+  font-size:14px;font-weight:700;color:var(--ink);
+}
+.home-tile.mint{background:var(--mint-soft);}
+.home-tile .ic{font-size:20px;}
+.home-tile small{display:block;font-weight:400;color:var(--ink-soft);font-size:12px;margin-top:2px;}
+
+.demo-strip{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 14px;margin:0 -2px 6px;scrollbar-width:none;}
+.demo-strip::-webkit-scrollbar{display:none;}
+.demo-chip{
+  flex:0 0 auto;
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:14px;padding:10px 14px;font-size:12.5px;
+  color:var(--ink-soft);white-space:nowrap;
+}
+
+.footer-note{
+  text-align:center;font-size:11.5px;color:var(--ink-soft);
+  padding:20px 24px 4px;line-height:1.8;
+}
+</style>
+
+<div class="stage" id="stage">
+  <div class="topbar">
+    <button class="back-btn" id="backBtn" aria-label="戻る">←</button>
+    <div class="brand"><span class="dot"></span>スーパーAIネタ帳</div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="progress-wrap" id="progressWrap">
+    <span class="progress-label" id="progressLabel">STEP 1 / 6</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- 0: TOP -->
+  <section class="screen active top-screen" data-screen="top">
+    <div class="top-badge">完全無料・Googleだけで作る</div>
+    <div class="mock-phone">📓</div>
+    <h1 class="top-title">今日、<span class="accent">何かあった？</span></h1>
+    <p class="top-sub">一言残すだけ。<br>あとはAIが育てます。<br>あなた専用の「AIネタ帳」を<br>自分のGoogleアカウントの中に作ります。</p>
+    <button class="cta" onclick="go('intro')">タップしてつくる →</button>
+    <div class="top-foot">かかる時間の目安：約5分</div>
+  </section>
+
+  <!-- 1: この教科書でできること -->
+  <section class="screen" data-screen="intro">
+    <p class="eyebrow">はじめに</p>
+    <h2>くだらない一言が、<br>あとで面白くなる話。</h2>
+    <p class="lead">「今日ツナおにぎり食べた」<br>「卵の黄身が2個だった」<br>そんな一言でOKです。<br>積み上がると、AIが気づいていなかったつながりを見つけてくれます。</p>
+    <div class="demo-strip">
+      <div class="demo-chip">🍙 今日ツナおにぎり食べた</div>
+      <div class="demo-chip">🥚 黄身が2個だった</div>
+      <div class="demo-chip">🍠 お尻からさつま芋</div>
+      <div class="demo-chip">😩 上司の会議長すぎ</div>
+      <div class="demo-chip">🪧 今の看板何？</div>
+    </div>
+    <div class="card">
+      <p style="margin:0;font-size:14px;line-height:1.8;color:var(--ink-soft);">これは<b style="color:var(--ink)">あなた専用</b>の教科書です。データはぜんぶ、あなた自身のGoogleアカウントの中に残ります。他の人には見えません。</p>
+    </div>
+    <div class="step-actions">
+      <button class="cta" onclick="go('check')">つづける →</button>
+    </div>
+  </section>
+
+  <!-- 2: Googleアカウント確認 -->
+  <section class="screen" data-screen="check" data-step="1">
+    <p class="eyebrow">かんたん確認</p>
+    <h2>使っているスマホ、<br>Googleでログインしてる？</h2>
+    <p class="lead">ふだん使っているGmailやYouTubeと同じアカウントでOKです。新しく何かを覚える必要はありません。</p>
+    <div class="mock-google">
+      <div class="mg-title">🔵 G &nbsp;Googleアカウント</div>
+      あなたの名前 · you@gmail.com
+      <div class="mg-btn">これでログイン中 ✓</div>
+    </div>
+    <div class="ss-placeholder">ここに実際のGoogleログイン画面のスクリーンショットが入ります</div>
+    <div class="step-actions">
+      <button class="cta" onclick="go('step1')">ログインしてる →</button>
+      <button class="cta secondary" onclick="toggle('t-check')">ログインしてるか分からない</button>
+    </div>
+    <div class="trouble" id="t-check">大丈夫です。よくあります。<br>スマホの設定アプリで、一番上に自分の名前が出ていればログイン済みです。出ていなければ、そこをタップして「ログイン」を選ぶだけで完了します。</div>
+  </section>
+
+  <!-- 3: STEP1 フォルダ -->
+  <section class="screen" data-screen="step1" data-step="2">
+    <p class="eyebrow">STEP 1</p>
+    <h2>ネタ帳の「置き場所」を<br>ひとつ作ります。</h2>
+    <p class="lead">Google Driveの中に、あなた専用のフォルダをひとつ作るだけです。</p>
+    <div class="tap-target">
+      <span class="tap-arrow">ここをタップ</span>
+      <div class="mock-google">
+        <div class="mg-title">📁 新規</div>
+        「新しいフォルダ」を選んで<br>名前は「スーパーAIネタ帳」のままでOK
+        <div class="mg-btn">作成</div>
+      </div>
+    </div>
+    <div class="ss-placeholder">ここに公式Google Drive画面のスクリーンショットが入ります</div>
+    <ul class="check-list">
+      <li class="done"><span class="ico">✓</span>置き場所ができました</li>
+    </ul>
+    <div class="step-actions">
+      <button class="cta" onclick="go('step2')">できた →</button>
+      <button class="cta secondary" onclick="toggle('t-step1')">うまくいかない</button>
+    </div>
+    <div class="trouble" id="t-step1">大丈夫です。よくあります。<br>「＋新規」ボタンが見当たらないときは、画面の左下、または左上を探してみてください。もう一度やってみましょう。</div>
+  </section>
+
+  <!-- 4: STEP2 テンプレートコピー -->
+  <section class="screen" data-screen="step2" data-step="3">
+    <p class="eyebrow">STEP 2</p>
+    <h2>ネタ帳の「中身」を<br>コピーします。</h2>
+    <p class="lead">すでに用意してあるテンプレートを、さっきのフォルダにコピーするだけ。作る必要はありません。</p>
+    <div class="tap-target">
+      <span class="tap-arrow">ここをタップ</span>
+      <div class="mock-google">
+        <div class="mg-title">📄 スーパーAIネタ帳（テンプレート）</div>
+        メニューの「ファイル」→「コピーを作成」
+        <div class="mg-btn">コピーを作成</div>
+      </div>
+    </div>
+    <div class="ss-placeholder">ここにテンプレートのコピー画面のスクリーンショットが入ります</div>
+    <ul class="check-list">
+      <li class="done"><span class="ico">✓</span>置き場所ができました</li>
+      <li class="done"><span class="ico">✓</span>中身をコピーしました</li>
+    </ul>
+    <div class="step-actions">
+      <button class="cta" onclick="go('step3')">できた →</button>
+      <button class="cta secondary" onclick="toggle('t-step2')">うまくいかない</button>
+    </div>
+    <div class="trouble" id="t-step2">大丈夫です。よくあります。<br>「コピーを作成」が見つからない場合は、画面右上の「︙」（点3つ）の中に入っていることがあります。一つ前に戻って確認してみましょう。</div>
+  </section>
+
+  <!-- 5: STEP3 権限許可 -->
+  <section class="screen" data-screen="step3" data-step="4">
+    <p class="eyebrow">STEP 3</p>
+    <h2>あなたの代わりに<br>動く許可を出します。</h2>
+    <p class="lead">「あなた専用のロボット」が、あなたのフォルダの中だけで働けるように、許可のボタンを押します。他の人のデータには触れません。</p>
+    <div class="tap-target">
+      <span class="tap-arrow">ここをタップ</span>
+      <div class="mock-google">
+        <div class="mg-title">🔵 G &nbsp;アクセスのリクエスト</div>
+        「スーパーAIネタ帳」があなたのGoogleアカウントへのアクセスを求めています
+        <div class="mg-btn">許可</div>
+      </div>
+    </div>
+    <div class="ss-placeholder">ここに実際の権限確認画面のスクリーンショットが入ります</div>
+    <ul class="check-list">
+      <li class="done"><span class="ico">✓</span>置き場所ができました</li>
+      <li class="done"><span class="ico">✓</span>中身をコピーしました</li>
+      <li class="done"><span class="ico">✓</span>許可を出しました</li>
+    </ul>
+    <div class="step-actions">
+      <button class="cta" onclick="go('step4')">できた →</button>
+      <button class="cta secondary" onclick="toggle('t-step3')">「安全ではない」と出た</button>
+    </div>
+    <div class="trouble" id="t-step3">大丈夫です。よくあります。<br>これはあなた自身が作ったものなので心配いりません。「詳細」→「（アプリ名）に移動」の順にタップすると先に進めます。</div>
+  </section>
+
+  <!-- 6: STEP4 通知タイミング -->
+  <section class="screen" data-screen="step4" data-step="5">
+    <p class="eyebrow">STEP 4</p>
+    <h2>いつ頃なら、<br>ちょっと一息つけそう？</h2>
+    <p class="lead">1日1回だけ、そっと声をかけます。うるさくしません。あとから変更もできます。</p>
+    <div class="card" style="padding:8px;">
+      <div id="timeOptions" style="display:flex;flex-direction:column;gap:8px;">
+      </div>
+    </div>
+    <div class="step-actions">
+      <button class="cta" onclick="go('firstinput')">これで決定 →</button>
+    </div>
+  </section>
+
+  <!-- 7: 最初の一言 -->
+  <section class="screen" data-screen="firstinput" data-step="6">
+    <p class="eyebrow">さいごに</p>
+    <h2>最初の一言を、<br>残してみましょう。</h2>
+    <p class="lead">どうでもいいことでOKです。うまく書こうとしなくて大丈夫。</p>
+    <div class="input-tabs">
+      <div class="input-tab selected" id="tabMic" onclick="selectTab('mic')"><span class="big">🎙</span>話す</div>
+      <div class="input-tab" id="tabText" onclick="selectTab('text')"><span class="big">⌨</span>書く</div>
+    </div>
+    <div id="micPane">
+      <button class="mic-btn" onclick="sampleReply()">🎙</button>
+      <div class="mic-hint">タップして試しに話しかけてみる<br>（今はデモ動作です）</div>
+    </div>
+    <div id="textPane" style="display:none;">
+      <textarea class="note-area" id="noteInput" placeholder="例）今日ツナおにぎり食べた"></textarea>
+      <div class="step-actions" style="margin-top:12px;">
+        <button class="cta" onclick="sampleReply()">これでOK</button>
+      </div>
+    </div>
+    <div class="reply-bubble" id="replyBubble">🍙 ツナ、今日の主役。</div>
+    <div class="step-actions" id="finishActions" style="display:none;">
+      <button class="cta" onclick="go('done')">できた！つぎへ →</button>
+    </div>
+  </section>
+
+  <!-- 8: 完成 -->
+  <section class="screen" data-screen="done">
+    <div class="confetti-emoji">🎉</div>
+    <h2 style="text-align:center;">完成！</h2>
+    <p class="lead" style="text-align:center;">これからは、思いついたことを<br>一言残すだけ。<br>くだらないことでもOKです。</p>
+    <div class="stat-row">
+      <div class="stat"><b>1</b><span>残したメモ</span></div>
+      <div class="stat"><b>0円</b><span>かかった費用</span></div>
+      <div class="stat"><b>あなた</b><span>だけのデータ</span></div>
+    </div>
+    <div class="step-actions">
+      <button class="cta" onclick="go('home')">🎙 ホーム画面を見てみる →</button>
+    </div>
+  </section>
+
+  <!-- 9: 完成後ホーム -->
+  <section class="screen" data-screen="home">
+    <p class="eyebrow">これが毎日使う画面</p>
+    <h2>今日からは<br>これだけ見ればOK</h2>
+    <div class="home-mock">
+      <div class="home-greet">今日、何かあった？</div>
+      <div class="home-mic-row">
+        <button class="home-mic-btn"><span class="ic">🎙</span>話す</button>
+        <button class="home-mic-btn alt"><span class="ic">⌨</span>書く</button>
+      </div>
+      <div class="home-tile"><span class="ic">💡</span><div>今日のひとネタ<small>1問だけ、気軽にどうぞ</small></div></div>
+      <div class="home-tile mint"><span class="ic">✨</span><div>AIからの発見<small>過去のメモがつながりました</small></div></div>
+      <div class="home-tile"><span class="ic">📚</span><div>ネタ帳<small>これまでの一言、ぜんぶここに</small></div></div>
+    </div>
+    <p class="lead" style="margin-top:22px;">数日後、AIが「これとこれ、つながってます」と教えてくれます。<br>それまでは、ただ一言残すだけでOK。</p>
+    <div class="step-actions">
+      <button class="cta" onclick="go('top')">🎙 最初からもう一度見る</button>
+    </div>
+    <p class="footer-note">あなたのメモは、あなたのGoogleアカウントの中だけに残ります。<br>このページがデータを預かることはありません。</p>
+  </section>
+</div>
+
+<script>
+const order = ['top','intro','check','step1','step2','step3','step4','firstinput','done','home'];
+const totalSteps = 6;
+let history = ['top'];
+
+function renderTimeOptions(){
+  const opts = [
+    ['お昼ごろ','☀️'],['午後','🌤'],['夕方','🌇'],['夜','🌙'],['寝る前','😴'],['おまかせ','🤝']
+  ];
+  const wrap = document.getElementById('timeOptions');
+  wrap.innerHTML = opts.map((o,i)=>`
+    <label style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;cursor:pointer;${i===5?'background:var(--yellow-soft);':''}">
+      <input type="radio" name="tm" ${i===5?'checked':''} style="width:18px;height:18px;accent-color:var(--coral);">
+      <span style="font-size:15px;">${o[1]} ${o[0]}</span>
+    </label>`).join('');
+}
+renderTimeOptions();
+
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.querySelector(`.screen[data-screen="${name}"]`);
+  target.classList.add('active');
+  history.push(name);
+  updateChrome(target);
+  document.getElementById('stage').scrollTop = 0;
+  window.scrollTo(0,0);
+}
+function back(){
+  if(history.length<2) return;
+  history.pop();
+  const prev = history[history.length-1];
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.querySelector(`.screen[data-screen="${prev}"]`);
+  target.classList.add('active');
+  history.pop(); // will be re-pushed by nothing; keep consistent
+  history.push(prev);
+  updateChrome(target);
+  window.scrollTo(0,0);
+}
+function updateChrome(target){
+  const step = target.getAttribute('data-step');
+  const wrap = document.getElementById('progressWrap');
+  const backBtn = document.getElementById('backBtn');
+  backBtn.classList.toggle('show', history.length>1 && target.dataset.screen!=='top');
+  if(step){
+    wrap.classList.add('show');
+    document.getElementById('progressLabel').textContent = `STEP ${step} / ${totalSteps}`;
+    document.getElementById('progressFill').style.width = (step/totalSteps*100)+'%';
+  } else {
+    wrap.classList.remove('show');
+  }
+}
+document.getElementById('backBtn').addEventListener('click', back);
+
+function toggle(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+
+function selectTab(which){
+  document.getElementById('tabMic').classList.toggle('selected', which==='mic');
+  document.getElementById('tabText').classList.toggle('selected', which==='text');
+  document.getElementById('micPane').style.display = which==='mic' ? '' : 'none';
+  document.getElementById('textPane').style.display = which==='text' ? '' : 'none';
+}
+
+const demoReplies = [
+  '🍙 ツナ、今日の主役。',
+  '🔮 今日の運勢は……ツナです。',
+  '📌 保存しました。じわじわ効いてきます。',
+  '🎬 本日の出演者、あなたの一言（主演）。'
+];
+function sampleReply(){
+  const bubble = document.getElementById('replyBubble');
+  bubble.textContent = demoReplies[0];
+  bubble.classList.add('show');
+  document.getElementById('finishActions').style.display = 'flex';
+}
+</script>
