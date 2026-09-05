@@ -1,0 +1,321 @@
+<meta charset="utf-8">
+<title>プロンプト工房 - スーパーAIネタ帳</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="あなたのネタ帳メモを、好きなAI(ChatGPT/Gemini/Grok/Claude)へ最高の形で渡すための工房">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{
+  --cream:#FBF6EC; --paper:#FFFCF6; --ink:#3A332B; --ink-soft:#8A7E70;
+  --coral:#FF6F47; --coral-deep:#E85A34; --mint:#2FA891; --mint-soft:#E4F5F1;
+  --yellow:#FFC94A; --yellow-soft:#FFF3D6; --line:#EDE2CE; --shadow:rgba(58,51,43,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --cream:#221D18; --paper:#2B241D; --ink:#F3EAE0; --ink-soft:#B7A996;
+    --coral:#FF8A63; --coral-deep:#FFA47E; --mint:#4FCBB2; --mint-soft:#1E332F;
+    --yellow:#FFD066; --yellow-soft:#3A2F1C; --line:#3C332A; --shadow:rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --cream:#221D18; --paper:#2B241D; --ink:#F3EAE0; --ink-soft:#B7A996;
+  --coral:#FF8A63; --coral-deep:#FFA47E; --mint:#4FCBB2; --mint-soft:#1E332F;
+  --yellow:#FFD066; --yellow-soft:#3A2F1C; --line:#3C332A; --shadow:rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;-webkit-font-smoothing:antialiased;}
+h1,h2,h3{font-family:"Zen Maru Gothic","Zen Kaku Gothic New",sans-serif;text-wrap:balance;}
+.stage{max-width:480px;margin:0 auto;min-height:100dvh;padding:0 0 40px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;position:sticky;top:0;background:linear-gradient(var(--cream) 70%, transparent);z-index:20;}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--ink-soft);text-decoration:none;}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--coral);}
+.back-link{border:none;background:var(--paper);color:var(--ink-soft);width:36px;height:36px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px var(--shadow);text-decoration:none;}
+.screen{display:none;padding:14px 20px 10px;}
+.screen.active{display:block;}
+.eyebrow{font-size:12px;font-weight:700;color:var(--mint);letter-spacing:.06em;margin:0 0 8px;}
+h2{font-size:24px;font-weight:900;margin:0 0 12px;line-height:1.4;}
+p.lead{font-size:15px;line-height:1.85;color:var(--ink);margin:0 0 18px;}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 4px 16px var(--shadow);margin-bottom:14px;}
+.empty-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px 18px;text-align:center;color:var(--ink-soft);font-size:14px;line-height:1.85;}
+.cta{display:inline-flex;align-items:center;gap:10px;background:var(--coral);color:#fff;border:none;font-family:inherit;font-weight:700;font-size:17px;padding:16px 30px;border-radius:99px;box-shadow:0 10px 24px -6px var(--coral-deep);cursor:pointer;width:100%;justify-content:center;text-decoration:none;}
+.cta:active{transform:scale(.98);}
+.cta:focus-visible{outline:3px solid var(--yellow);outline-offset:3px;}
+.cta.secondary{background:transparent;color:var(--ink-soft);box-shadow:none;font-size:14px;padding:10px;font-weight:500;}
+.step-actions{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+
+details.cat{background:var(--paper);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;overflow:hidden;}
+details.cat summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:space-between;}
+details.cat summary::-webkit-details-marker{display:none;}
+details.cat summary::after{content:'▾';color:var(--ink-soft);transition:transform .2s;}
+details.cat[open] summary::after{transform:rotate(180deg);}
+.chip-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 14px;}
+.chip{
+  border:1px solid var(--line);background:var(--cream);color:var(--ink);
+  font-family:inherit;font-size:13.5px;font-weight:700;
+  padding:10px 14px;border-radius:99px;cursor:pointer;display:flex;align-items:center;gap:6px;
+}
+.chip:hover{border-color:var(--coral);}
+.chip:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
+
+.summary-chip{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:9px 13px;font-size:12.5px;color:var(--ink-soft);white-space:nowrap;}
+.summary-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none;}
+.summary-strip::-webkit-scrollbar{display:none;}
+
+.note-area{width:100%;min-height:200px;border:1px solid var(--line);border-radius:16px;padding:16px;font-family:inherit;font-size:13px;background:var(--paper);color:var(--ink);resize:none;}
+.helper-note{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:12px;line-height:1.8;}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+.ai-btn{border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:14px 10px;font-family:inherit;font-weight:700;font-size:14px;color:var(--ink);cursor:pointer;}
+.ai-btn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
+.result-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.result-header .ic{font-size:28px;}
+</style>
+
+<div class="stage" id="stage">
+  <div class="topbar">
+    <a class="back-link" href="/" aria-label="ネタ帳へ戻る">←</a>
+    <a class="brand" href="/"><span class="dot"></span>スーパーAIネタ帳</a>
+    <div style="width:36px"></div>
+  </div>
+
+  <!-- 工房一覧 -->
+  <section class="screen active" data-screen="list">
+    <p class="eyebrow">🤖 プロンプト工房</p>
+    <h2>このメモ、<br>どう料理する？</h2>
+    <p class="lead">工房をひとつ選ぶと、あなたのメモに合わせたプロンプトができます。好きなAIに貼るだけです。</p>
+    <div id="noteStatus"></div>
+    <div id="categories"></div>
+    <p class="helper-note">このページはAI APIを呼びません。まとめとプロンプト作りは、すべてこの端末の中だけで行われます。</p>
+  </section>
+
+  <!-- 生成結果 -->
+  <section class="screen" data-screen="result">
+    <p class="eyebrow" id="resultEyebrow">🤖 工房</p>
+    <div class="result-header">
+      <span class="ic" id="resultIcon">🪞</span>
+      <h2 id="resultTitle" style="margin:0;">これを、<br>AIに貼ってください。</h2>
+    </div>
+    <div class="card" id="resultSummary"></div>
+    <details class="cat" id="promptDetails">
+      <summary>プロンプトの中身を見る</summary>
+      <div style="padding:0 16px 16px;">
+        <textarea class="note-area" id="promptText" readonly aria-label="生成されたプロンプト"></textarea>
+      </div>
+    </details>
+    <div class="step-actions">
+      <button class="cta" onclick="copyPrompt()">📋 コピーする</button>
+    </div>
+    <p class="helper-note" id="copyStatus">好きなAIを選んでください。タップすると自動でコピーして開きます。</p>
+    <div class="ai-grid" id="aiGrid"></div>
+    <div class="step-actions" style="margin-top:22px;">
+      <button class="cta secondary" onclick="showList()">別の工房を選ぶ</button>
+      <a class="cta secondary" href="/" style="display:block;text-align:center;">ネタ帳へ戻る</a>
+    </div>
+  </section>
+</div>
+
+<script>
+const NOTES_KEY = 'ai-netabook-notes-v1';
+function getNotes(){
+  try{ return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); }catch(e){ return []; }
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function formatDateFull(ts){
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ===================== 工房データ ===================== */
+const CATEGORIES = [
+  {cat:'🪞 自分', items:['self','psych','soudan']},
+  {cat:'👥 人',   items:['observe','love','talk']},
+  {cat:'😂 遊ぶ', items:['meme','fortune','trivia']},
+  {cat:'💡 生み出す', items:['idea','biz','create']},
+  {cat:'📈 投資', items:['invest']},
+  {cat:'🔎 掘る', items:['discover','learn']},
+  {cat:'✨',      items:['auto']}
+];
+const WORKSHOPS = {
+  self:{icon:'🪞', label:'自分発見', instruction:
+    'このメモから、私自身がまだ気づいていない「興味」「価値観」「好み」「思考の傾向」「行動パターン」「繰り返し出てくるテーマ」を探してください。心理診断のように断定せず、複数の可能性として示してください。'},
+  psych:{icon:'🧠', label:'心理', instruction:
+    'このメモに表れている「感情」「考え」「行動」「欲求」「不安」「違和感」を整理してください。ひとつに決めつけず、複数の解釈の可能性を示してください。診断や断定はしないでください。'},
+  observe:{icon:'👀', label:'人間観察', instruction:
+    'このメモに出てくる人の行動・会話・習慣を観察してください。「この人は絶対こういう性格だ」のような断定はせず、複数の解釈をやわらかく提示してください。'},
+  love:{icon:'❤️', label:'恋愛', instruction:
+    '相手の気持ちを断定しないでください。行動・私の感情・関係性を整理し、考えられる複数の可能性と、次に確認してみるとよさそうなことを提案してください。'},
+  soudan:{icon:'💬', label:'お悩み相談', instruction:
+    'このメモを「事実」「感情」「不安」「本当の問題」「コントロールできること」「コントロールできないこと」「選択肢」に分けて整理してください。唯一の正解を押し付けないでください。'},
+  meme:{icon:'😂', label:'ミーム', instruction:
+    'このメモから、自然に「ふっ」となるような軽いユーモアを作ってください。無理に笑わせようとしないでください。攻撃的・差別的・下品な表現は禁止です。一言ツッコミ、ミーム的な言い回し、少し大げさな表現などを使ってよいです。'},
+  fortune:{icon:'🔮', label:'占い', instruction:
+    'このメモにちなんで、娯楽としての「今日の運勢」的な占いを作ってください。本気の未来予知として断定しないでください。メモの内容にちなんだ面白い表現を歓迎します（例:「今日の運勢は……ツナです。」）。'},
+  trivia:{icon:'📚', label:'雑学', instruction:
+    'このメモに関連しそうな「へえ」と思える雑学（歴史・科学・文化・言葉・食・社会など）を探してください。事実と推測は分けてください。最新情報の確認が必要な場合は、あなた自身のWeb検索機能で調べたうえで答えてください。'},
+  talk:{icon:'🗣', label:'会話', instruction:
+    'このメモにある一つの体験を、複数の角度の話題に展開してください（例: 面白かった点、意外だった点、失敗した点、疑問に思った点、学んだ点、笑えた点）。同じ話の繰り返しにならないようにしてください。'},
+  idea:{icon:'💡', label:'アイデア', instruction:
+    'このメモにある不満・不便・欲求・面白い現象・「こうだったらいいのに」という気持ちから、アイデアの種を探してください。'},
+  biz:{icon:'💼', label:'ビジネス', instruction:
+    'このメモにある不満・不便・欲求から、「誰の問題か」「何を解決するか」「今ある代替手段」「差別化ポイント」「低コストで試せる方法」「収益化の方向性」「最大のリスク」まで考えてください。'},
+  invest:{icon:'📈', label:'投資', instruction:
+    'このメモから、市場の変化・消費動向・技術変化・社会の変化・企業テーマにつながる可能性を探してください。投資の判断を断定しないでください。最新の株価や情報が必要な場合は、あなた自身のWeb検索機能で確認したうえで答えてください。' +
+    '必ず「事実」「推測」「投資仮説」「反証材料（その仮説が外れる場合の理由）」を分けてください。「買う理由」だけでなく「買わない理由」も必ず考えてください。これは投資助言ではなく、思考整理のための材料です。'},
+  create:{icon:'🎨', label:'創作', instruction:
+    'このメモから、文章・画像・動画・写真・音声などの創作につながりそうな種を探してください。'},
+  learn:{icon:'📖', label:'学び', instruction:
+    'このメモの中から、もっと深く知ると日常が少し面白くなりそうなテーマを見つけてください。「勉強しなさい」という説教にはしないでください。'},
+  discover:{icon:'🔎', label:'発見', instruction:
+    '複数のメモを横断して見て、繰り返し・変化・意外な共通点・私が気づいていない可能性を探してください。関連性が薄い場合は、無理に発見を作らないでください。'},
+  auto:{icon:'✨', label:'おまかせ', instruction:
+    '次の観点（自分発見・心理・人間観察・恋愛・お悩み相談・ミーム・占い・雑学・会話・アイデア・ビジネス・投資・創作・学び・発見）の中から、このメモに一番合いそうなものを1〜3個選んでください。選んだ理由を短く述べたうえで、それらの観点を組み合わせた今回専用の分析をしてください。'}
+};
+
+const PROMPT_OS = `あなたは私の思考整理パートナーです。私が残した日常の一言メモを渡します。
+
+【基本方針】
+・メモを単なる要約で終わらせないでください。
+・複数のメモを横断して見てください。
+・繰り返し出るテーマを探してください。
+・意外な共通点を探してください。
+・事実と推測を必ず分けてください（事実: メモに書かれている内容そのもの／推測: そこから考えられる可能性。「〜かもしれません」「〜のようです」を使う）。
+・根拠のない断定をしないでください。
+・無理に意味を作らないでください。分からないことは分からないとしてください。
+・私を無条件に褒めないでください。「あなたは天才です」「素晴らしい発想です」「最高です」のような安易な賞賛は禁止です。
+・必要なら軽いユーモアを使ってよいですが、人を傷つける表現は避けてください。
+・最後に、可能であれば「試せる小さな一歩」を1つ提案してください。
+・「そんな見方があったのか」と思えるような視点を、最低1つは探してください。`;
+
+/* ===================== ローカル集計（外部AI不使用） ===================== */
+function buildLocalSummary(notes){
+  const counts = {}, kwCounts = {};
+  notes.forEach(n=>{
+    if(n.category) counts[n.category] = (counts[n.category]||0)+1;
+    (n.keywords||[]).forEach(k=>{ kwCounts[k] = (kwCounts[k]||0)+1; });
+  });
+  const topCategories = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const topKeywords = Object.entries(kwCounts).filter(([,c])=>c>=2).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const honor = Object.entries(kwCounts).sort((a,b)=>b[1]-a[1]).find(([,c])=>c>=3);
+  return {topCategories, topKeywords, honor};
+}
+function buildPrompt(key, notes){
+  const w = WORKSHOPS[key];
+  const summary = buildLocalSummary(notes);
+  const catLines = summary.topCategories.map(([c,n])=>`・${c}: ${n}件`).join('\n') || '・まだ傾向が出るほどメモがたまっていません（事実）';
+  const kwLines = summary.topKeywords.map(([k,n])=>`・${k}（${n}回）`).join('\n') || '・まだ繰り返し出てくる言葉は見つかっていません（事実）';
+  const honorLine = summary.honor ? `・「${summary.honor[0]}」というテーマ/言葉が${summary.honor[1]}回登場しています（同じ話が繰り返されている可能性があります）` : '';
+  const recent = notes.slice(0, 40);
+  const memoLines = recent.map(n=>`${formatDateFull(n.timestamp)}\n「${n.text}」`).join('\n\n');
+
+  return `${PROMPT_OS}
+
+【今回選んだ工房】
+${w.icon} ${w.label}
+
+【この工房での依頼】
+${w.instruction}
+
+【今回のメモの傾向（事実の集計。この端末内のローカル集計のみで、AIは使っていません）】
+${catLines}
+${kwLines}
+${honorLine}
+
+【私の最近のメモ（全${notes.length}件中、直近${recent.length}件）】
+${memoLines}
+
+【出力形式】
+・見出しを使って読みやすく整理してください。
+・事実と推測が混ざらないようにしてください。
+・長すぎる前置きは不要です。`;
+}
+
+/* ===================== 画面制御 ===================== */
+let currentKey = null;
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`.screen[data-screen="${name}"]`).classList.add('active');
+  window.scrollTo(0,0);
+}
+function showList(){ renderList(); showScreen('list'); }
+
+function renderList(){
+  const notes = getNotes();
+  const statusEl = document.getElementById('noteStatus');
+  if(notes.length === 0){
+    statusEl.innerHTML = `<div class="empty-card">まだメモがありません。<br>先に<a href="/" style="color:var(--mint);font-weight:700;">ネタ帳</a>から一言残してみましょう。</div>`;
+  }else{
+    const summary = buildLocalSummary(notes);
+    const chips = summary.topCategories.length
+      ? summary.topCategories.map(([c,n])=>`<div class="summary-chip">${escapeHtml(c)} ${n}件</div>`).join('')
+      : `<div class="summary-chip">まだ傾向は出ていません</div>`;
+    statusEl.innerHTML = `<div class="card">
+      <p style="margin:0 0 8px;font-weight:700;font-size:14px;">今のネタ帳: ${notes.length}件</p>
+      <div class="summary-strip">${chips}</div>
+    </div>`;
+  }
+  const catEl = document.getElementById('categories');
+  catEl.innerHTML = CATEGORIES.map((c,i)=>`
+    <details class="cat" ${i===0?'open':''}>
+      <summary>${c.cat}</summary>
+      <div class="chip-wrap">
+        ${c.items.map(key=>{
+          const w = WORKSHOPS[key];
+          return `<button class="chip" onclick="openWorkshop('${key}')">${w.icon} ${w.label}</button>`;
+        }).join('')}
+      </div>
+    </details>`).join('');
+}
+
+function openWorkshop(key){
+  const notes = getNotes();
+  if(notes.length === 0){
+    alert('先にネタ帳からメモをひとつ残してみましょう。');
+    return;
+  }
+  currentKey = key;
+  const w = WORKSHOPS[key];
+  const promptText = buildPrompt(key, notes);
+  document.getElementById('resultIcon').textContent = w.icon;
+  document.getElementById('resultEyebrow').textContent = `🤖 ${w.label}`;
+  document.getElementById('promptText').value = promptText;
+  document.getElementById('promptDetails').open = false;
+  const summary = buildLocalSummary(notes);
+  const chips = summary.topCategories.length
+    ? summary.topCategories.map(([c,n])=>`<div class="summary-chip">${escapeHtml(c)} ${n}件</div>`).join('')
+    : '<div class="summary-chip">まだ傾向は出ていません</div>';
+  document.getElementById('resultSummary').innerHTML = `
+    <p style="margin:0 0 8px;font-weight:700;">メモ${notes.length}件・${promptText.length}文字のプロンプトができました</p>
+    <div class="summary-strip">${chips}</div>`;
+  document.getElementById('copyStatus').textContent = '好きなAIを選んでください。タップすると自動でコピーして開きます。';
+
+  const AI_SERVICES = [
+    {name:'ChatGPT', url:'https://chatgpt.com/'},
+    {name:'Gemini', url:'https://gemini.google.com/app'},
+    {name:'Grok', url:'https://grok.com/'},
+    {name:'Claude', url:'https://claude.ai/new'}
+  ];
+  document.getElementById('aiGrid').innerHTML = AI_SERVICES.map(s=>
+    `<button class="ai-btn" onclick="openAiService('${s.url}')">${s.name}で開く</button>`
+  ).join('');
+
+  showScreen('result');
+}
+
+async function copyPrompt(){
+  const ta = document.getElementById('promptText');
+  const statusEl = document.getElementById('copyStatus');
+  try{
+    await navigator.clipboard.writeText(ta.value);
+  }catch(e){
+    document.getElementById('promptDetails').open = true;
+    ta.removeAttribute('readonly'); ta.focus(); ta.select();
+    try{ document.execCommand('copy'); }catch(e2){}
+    ta.setAttribute('readonly','');
+  }
+  if(statusEl) statusEl.textContent = '✓ コピーしました。好きなAIに貼り付けてください。';
+}
+async function openAiService(url){
+  await copyPrompt();
+  window.open(url, '_blank', 'noopener');
+}
+
+renderList();
+</script>
