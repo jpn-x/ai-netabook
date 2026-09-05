@@ -394,32 +394,31 @@ h1,h2,h3,.display{
 .stat b{display:block;font-size:22px;color:var(--coral);font-variant-numeric:tabular-nums;}
 .stat span{font-size:12px;color:var(--ink-soft);}
 
-/* home mock */
+/* home: カードで囲わず、画面幅いっぱいに要素を並べる */
+.screen[data-screen="home"]{padding-left:14px;padding-right:14px;padding-top:20px;}
 .home-mock{
-  background:var(--paper);
-  border:1px solid var(--line);
-  border-radius:28px;
-  padding:26px 20px;
-  box-shadow:0 10px 30px var(--shadow);
+  display:flex;
+  flex-direction:column;
 }
-.home-greet{font-size:19px;font-weight:900;text-align:center;margin-bottom:22px;}
-.home-mic-row{display:flex;gap:14px;margin-bottom:18px;}
+.home-greet{font-size:26px;font-weight:900;text-align:center;margin-bottom:28px;}
+.home-mic-row{display:flex;gap:16px;margin-bottom:24px;}
 .home-mic-btn{
-  flex:1;background:var(--coral);color:#fff;border:none;border-radius:20px;
-  padding:22px 10px;font-weight:700;font-size:14px;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
+  flex:1;background:var(--coral);color:#fff;border:none;border-radius:24px;
+  padding:34px 10px;font-weight:700;font-size:16px;
+  box-shadow:0 12px 26px -8px var(--coral-deep);
+  display:flex;flex-direction:column;align-items:center;gap:12px;
 }
-.home-mic-btn.alt{background:var(--ink);color:var(--paper);}
-.home-mic-btn .ic{font-size:26px;}
+.home-mic-btn.alt{background:var(--ink);color:var(--paper);box-shadow:0 12px 26px -10px rgba(0,0,0,.4);}
+.home-mic-btn .ic{font-size:34px;}
 .home-tile{
-  display:flex;align-items:center;gap:12px;
+  display:flex;align-items:center;gap:16px;
   background:var(--yellow-soft);
-  border-radius:16px;padding:14px 16px;margin-bottom:10px;
-  font-size:14px;font-weight:700;color:var(--ink);
+  border-radius:20px;padding:20px 20px;margin-bottom:14px;
+  font-size:16px;font-weight:700;color:var(--ink);
 }
 .home-tile.mint{background:var(--mint-soft);}
-.home-tile .ic{font-size:20px;}
-.home-tile small{display:block;font-weight:400;color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
+.home-tile .ic{font-size:26px;}
+.home-tile small{display:block;font-weight:400;color:var(--ink-soft);font-size:13.5px;margin-top:3px;}
 button.home-tile{border:none;width:100%;text-align:left;font-family:inherit;cursor:pointer;}
 button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
 
