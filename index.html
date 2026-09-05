@@ -1550,6 +1550,19 @@ function renderHomeStats(){
 }
 
 /* ===================================================================
+   リセット用: URLに ?reset=1 を付けて開くと、登録前の新規状態に戻す。
+   （動作確認・やり直し用。iPhoneでも開発者ツールなしで使える）
+   =================================================================== */
+(function checkReset(){
+  const params = new URLSearchParams(location.search);
+  if(params.get('reset') === '1'){
+    ['ai-netabook-notify-slot','ai-netabook-setup-complete','ai-netabook-notes-v1','ai-netabook-topic-v1']
+      .forEach(k=>localStorage.removeItem(k));
+    location.replace(location.pathname);
+  }
+})();
+
+/* ===================================================================
    初期ルーティング: 登録(タップ式教科書)が完了済みなら、
    / を開いた瞬間に必ず通常ホームを表示する。セットアップ画面は経由しない。
    =================================================================== */
