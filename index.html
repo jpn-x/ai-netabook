@@ -665,7 +665,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
         <button class="home-mic-btn alt" onclick="openCompose('free')"><span class="ic">⌨</span>書く</button>
       </div>
       <button class="home-tile" onclick="openCompose('topic')"><span class="ic">💡</span><div>今日のひとネタ<small>1問だけ、気軽にどうぞ</small></div></button>
-      <button class="home-tile mint" onclick="go('discovery')"><span class="ic">✨</span><div>AIからの発見<small>たまったら、AIに見てもらえます</small></div></button>
+      <button class="home-tile mint" onclick="go('discovery')"><span class="ic">✨</span><div>今週のメモ<small>たまったら、AIに見てもらえます</small></div></button>
       <button class="home-tile" onclick="go('notebook')"><span class="ic">📚</span><div>ネタ帳<small id="homeNoteCount">これまでの一言、ぜんぶここに</small></div></button>
       <a class="home-tile" href="/workshop/" style="text-decoration:none;"><span class="ic">🏭</span><div>プロンプト工房<small>好きなAIに渡す準備をします</small></div></a>
     </div>
@@ -699,10 +699,10 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     </div>
   </section>
 
-  <!-- 11: AIからの発見 -->
+  <!-- 11: 今週のメモ（旧: AIからの発見） -->
   <section class="screen" data-screen="discovery">
-    <p class="eyebrow">✨ AIからの発見</p>
-    <h2>点と点が、<br>つながっているかも。</h2>
+    <p class="eyebrow">✨ 今週のメモ</p>
+    <h2>たまったメモを、<br>ふりかえってみましょう。</h2>
     <div id="discoveryBody"></div>
     <div class="step-actions">
       <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
@@ -714,6 +714,9 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     <p class="eyebrow">📚 ネタ帳</p>
     <h2>これまでの一言</h2>
     <div id="notebookBody"></div>
+    <div class="step-actions" id="notebookWorkshopCta" style="display:none;">
+      <a class="cta secondary" href="/workshop/" style="display:block;text-align:center;border:1px solid var(--line);">🏭 このメモをAIに見てもらう</a>
+    </div>
     <div class="step-actions">
       <button class="cta" onclick="openCompose('free')">🎙 もう一言残す</button>
       <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
@@ -1217,6 +1220,8 @@ function formatDate(ts){
 function renderNotebookScreen(){
   const notes = Storage.getAll();
   const body = document.getElementById('notebookBody');
+  const workshopCta = document.getElementById('notebookWorkshopCta');
+  if(workshopCta) workshopCta.style.display = notes.length >= 3 ? 'flex' : 'none';
   if(!notes.length){
     body.innerHTML = '<div class="empty-card">まだメモがありません。<br>🎙話す・⌨書くから、最初の一言を残してみましょう。</div>';
     return;
@@ -1312,12 +1317,13 @@ function renderDiscoveryScreen(){
 
   let ctaHtml;
   if(notes.length < 3){
-    ctaHtml = '<div class="empty-card">もう少しメモがたまると、AIに見てもらえるようになります。</div>';
+    ctaHtml = '<div class="empty-card">もう少しメモがたまったら、AIに見てもらえるようになります。</div>';
   }else{
+    const ctaLabel = notes.length >= 7 ? 'この1週間をAIに見てもらう' : 'このメモ、もっと面白くしてみる？';
     ctaHtml = `<div class="card">
       <p style="margin:0 0 10px;font-weight:700;">🤖 このメモ、どう料理する？</p>
       <p style="margin:0 0 14px;font-size:14px;color:var(--ink-soft);line-height:1.8;">プロンプト工房で、好きなAI（ChatGPT / Gemini / Grok / Claude）に貼るだけの文章を作ります。</p>
-      <a class="cta" href="/workshop/" style="display:block;text-align:center;">プロンプト工房へ →</a>
+      <a class="cta" href="/workshop/" style="display:block;text-align:center;">${ctaLabel} →</a>
     </div>`;
   }
   body.innerHTML = weekHtml + honorHtml + ctaHtml;
@@ -1471,12 +1477,14 @@ function renderHomeStats(){
    =================================================================== */
 (function initRouting(){
   if(isSetupComplete()){
+    const wanted = location.hash === '#notebook' ? 'notebook' : 'home';
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    const homeEl = document.querySelector('.screen[data-screen="home"]');
-    homeEl.classList.add('active');
-    history = ['home'];
-    updateChrome(homeEl);
+    const el = document.querySelector(`.screen[data-screen="${wanted}"]`);
+    el.classList.add('active');
+    history = wanted === 'home' ? ['home'] : ['home', wanted];
+    updateChrome(el);
     renderHomeStats();
+    if(RENDER_HOOKS[wanted]) RENDER_HOOKS[wanted]();
   }
 })();
 </script>

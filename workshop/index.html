@@ -67,11 +67,30 @@ details.cat[open] summary::after{transform:rotate(180deg);}
 .ai-btn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
 .result-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .result-header .ic{font-size:28px;}
+
+.stage{padding-bottom:76px;}
+.tabbar{
+  display:flex;position:fixed;bottom:0;left:0;right:0;
+  max-width:480px;margin:0 auto;
+  background:var(--paper);border-top:1px solid var(--line);
+  box-shadow:0 -4px 16px var(--shadow);
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  gap:6px;z-index:30;
+}
+.tab-btn{
+  flex:1;border:none;background:transparent;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-family:inherit;font-size:11px;color:var(--ink-soft);font-weight:700;
+  padding:6px 4px;border-radius:12px;cursor:pointer;text-decoration:none;
+}
+.tab-btn .tab-ic{font-size:19px;}
+.tab-btn.active{color:var(--coral);background:var(--yellow-soft);}
+.tab-btn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
 </style>
 
 <div class="stage" id="stage">
   <div class="topbar">
-    <a class="back-link" href="/" aria-label="ネタ帳へ戻る">←</a>
+    <a class="back-link" href="/" aria-label="ホームへ戻る">←</a>
     <a class="brand" href="/"><span class="dot"></span>スーパーAIネタ帳</a>
     <div style="width:36px"></div>
   </div>
@@ -107,9 +126,15 @@ details.cat[open] summary::after{transform:rotate(180deg);}
     <div class="ai-grid" id="aiGrid"></div>
     <div class="step-actions" style="margin-top:22px;">
       <button class="cta secondary" onclick="showList()">別の工房を選ぶ</button>
-      <a class="cta secondary" href="/" style="display:block;text-align:center;">ネタ帳へ戻る</a>
+      <a class="cta secondary" href="/#notebook" style="display:block;text-align:center;">ネタ帳へ戻る</a>
     </div>
   </section>
+
+  <nav class="tabbar" aria-label="ナビゲーション">
+    <a class="tab-btn" href="/"><span class="tab-ic">🏠</span>ホーム</a>
+    <a class="tab-btn" href="/#notebook"><span class="tab-ic">📚</span>ネタ帳</a>
+    <a class="tab-btn active" href="/workshop/"><span class="tab-ic">🏭</span>工房</a>
+  </nav>
 </div>
 
 <script>
