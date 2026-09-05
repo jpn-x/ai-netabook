@@ -24,7 +24,7 @@
 *{box-sizing:border-box;}
 body{margin:0;background:var(--cream);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;-webkit-font-smoothing:antialiased;}
 h1,h2,h3{font-family:"Zen Maru Gothic","Zen Kaku Gothic New",sans-serif;text-wrap:balance;}
-.stage{max-width:480px;margin:0 auto;min-height:100dvh;padding:0 0 40px;}
+.stage{max-width:480px;margin:0 auto;padding:0 0 40px;}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 18px 14px;position:sticky;top:0;background:linear-gradient(var(--cream) 70%, transparent);z-index:20;}
 .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--ink-soft);text-decoration:none;}
 .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--coral);}
@@ -68,13 +68,12 @@ details.cat[open] summary::after{transform:rotate(180deg);}
 .result-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .result-header .ic{font-size:28px;}
 
-.stage{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
 .tabbar{
-  display:flex;position:fixed;bottom:0;left:0;right:0;
-  max-width:480px;margin:0 auto;
+  display:flex;position:sticky;bottom:0;
   background:var(--paper);border-top:1px solid var(--line);
   box-shadow:0 -4px 16px var(--shadow);
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  margin-top:24px;
   gap:6px;z-index:30;
 }
 .tab-btn{

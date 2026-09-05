@@ -62,7 +62,6 @@ h1,h2,h3,.display{
 .stage{
   max-width:480px;
   margin:0 auto;
-  min-height:100dvh;
   padding:0 0 40px;
   position:relative;
 }
@@ -457,18 +456,17 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
 
 .tabbar{
   display:none;
-  position:fixed;bottom:0;left:0;right:0;
-  max-width:480px;margin:0 auto;
+  position:sticky;bottom:0;
   background:var(--paper);
   border-top:1px solid var(--line);
   box-shadow:0 -4px 16px var(--shadow);
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  margin-top:24px;
   gap:6px;
   z-index:30;
 }
 .tabbar.show{display:flex;}
 .tabbar.kb-hidden{display:none !important;}
-.stage.with-tabbar{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
 .tab-btn{
   flex:1;border:none;background:transparent;
   display:flex;flex-direction:column;align-items:center;gap:2px;
