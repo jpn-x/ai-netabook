@@ -414,6 +414,25 @@ h1,h2,h3,.display{
 .home-tile.mint{background:var(--mint-soft);}
 .home-tile .ic{font-size:20px;}
 .home-tile small{display:block;font-weight:400;color:var(--ink-soft);font-size:12px;margin-top:2px;}
+button.home-tile{border:none;width:100%;text-align:left;font-family:inherit;cursor:pointer;}
+button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
+
+.mic-btn.listening{animation:mic-pulse 1s ease-in-out infinite;}
+@keyframes mic-pulse{0%,100%{box-shadow:0 10px 24px -6px var(--coral-deep);}50%{box-shadow:0 10px 36px 0px var(--coral-deep);}}
+@media (prefers-reduced-motion:reduce){.mic-btn.listening{animation:none;}}
+
+.note-card{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:16px;padding:16px 18px;margin-bottom:12px;
+}
+.note-meta{margin:0 0 6px;font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+.note-text{margin:0 0 8px;font-size:15px;line-height:1.7;color:var(--ink);}
+.note-reaction{margin:0;font-size:13px;color:var(--mint);font-weight:700;}
+.empty-card{
+  background:var(--paper);border:1px solid var(--line);border-radius:16px;
+  padding:24px 18px;text-align:center;color:var(--ink-soft);
+  font-size:14px;line-height:1.85;
+}
 
 .demo-strip{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 14px;margin:0 -2px 6px;scrollbar-width:none;}
 .demo-strip::-webkit-scrollbar{display:none;}
@@ -579,16 +598,16 @@ h1,h2,h3,.display{
       <div class="input-tab" id="tabText" onclick="selectTab('text')"><span class="big">⌨</span>書く</div>
     </div>
     <div id="micPane">
-      <button class="mic-btn" onclick="sampleReply()" aria-label="タップして話す">🎙</button>
-      <div class="mic-hint">タップして、ひとこと話しかけてみましょう</div>
+      <button class="mic-btn" id="firstMicBtn" onclick="handleMicTap('first')" aria-label="タップして話す">🎙</button>
+      <div class="mic-hint" id="firstMicHint">タップして、ひとこと話しかけてみましょう</div>
     </div>
     <div id="textPane" style="display:none;">
       <textarea class="note-area" id="noteInput" placeholder="例）今日ツナおにぎり食べた" aria-label="最初の一言を入力"></textarea>
       <div class="step-actions" style="margin-top:12px;">
-        <button class="cta" onclick="sampleReply()">これでOK</button>
+        <button class="cta" onclick="handleTextSave('first')">これでOK</button>
       </div>
     </div>
-    <div class="reply-bubble" id="replyBubble" aria-live="polite">🍙 ツナ、今日の主役。</div>
+    <div class="reply-bubble" id="replyBubble" aria-live="polite"></div>
     <p class="helper-note" id="futureNote" style="display:none;">今日はここまででOK。<br>この一言も、あとで何かにつながるかもしれません。</p>
     <div class="step-actions" id="finishActions" style="display:none;">
       <button class="cta" onclick="go('done')">次へ →</button>
@@ -601,11 +620,11 @@ h1,h2,h3,.display{
     <h2 style="text-align:center;">完成！</h2>
     <p class="lead" style="text-align:center;">今日から、思いついたことを<br>一言残すだけです。</p>
     <div class="home-mic-row" style="margin:22px 0;">
-      <button class="home-mic-btn" onclick="go('home')"><span class="ic">🎙</span>話す</button>
-      <button class="home-mic-btn alt" onclick="go('home')"><span class="ic">⌨</span>書く</button>
+      <button class="home-mic-btn" onclick="openCompose('free')"><span class="ic">🎙</span>話す</button>
+      <button class="home-mic-btn alt" onclick="openCompose('free')"><span class="ic">⌨</span>書く</button>
     </div>
     <div class="stat-row">
-      <div class="stat"><b>1</b><span>残したメモ</span></div>
+      <div class="stat"><b id="doneNoteCount">1</b><span>残したメモ</span></div>
       <div class="stat"><b>0円</b><span>かかった費用</span></div>
       <div class="stat"><b>あなた</b><span>だけのデータ</span></div>
     </div>
@@ -621,18 +640,66 @@ h1,h2,h3,.display{
     <div class="home-mock">
       <div class="home-greet">今日、何かあった？</div>
       <div class="home-mic-row">
-        <button class="home-mic-btn"><span class="ic">🎙</span>話す</button>
-        <button class="home-mic-btn alt"><span class="ic">⌨</span>書く</button>
+        <button class="home-mic-btn" onclick="openCompose('free')"><span class="ic">🎙</span>話す</button>
+        <button class="home-mic-btn alt" onclick="openCompose('free')"><span class="ic">⌨</span>書く</button>
       </div>
-      <div class="home-tile"><span class="ic">💡</span><div>今日のひとネタ<small>1問だけ、気軽にどうぞ</small></div></div>
-      <div class="home-tile mint"><span class="ic">✨</span><div>AIからの発見<small>過去のメモがつながりました</small></div></div>
-      <div class="home-tile"><span class="ic">📚</span><div>ネタ帳<small>これまでの一言、ぜんぶここに</small></div></div>
+      <button class="home-tile" onclick="openCompose('topic')"><span class="ic">💡</span><div>今日のひとネタ<small>1問だけ、気軽にどうぞ</small></div></button>
+      <button class="home-tile mint" onclick="go('discovery')"><span class="ic">✨</span><div>AIからの発見<small>メモがつながると出てきます</small></div></button>
+      <button class="home-tile" onclick="go('notebook')"><span class="ic">📚</span><div>ネタ帳<small id="homeNoteCount">これまでの一言、ぜんぶここに</small></div></button>
     </div>
     <p class="lead" style="margin-top:22px;">数日後、AIが「これとこれ、つながってます」と教えてくれます。<br>それまでは、ただ一言残すだけでOK。</p>
     <div class="step-actions">
-      <button class="cta" onclick="go('top')">🎙 最初からもう一度見る</button>
+      <button class="cta secondary" onclick="go('top')">最初からもう一度見る</button>
     </div>
     <p class="footer-note">あなたのメモは、あなたのGoogleアカウントの中だけに残ります。<br>このページがデータを預かることはありません。</p>
+  </section>
+
+  <!-- 10: 一言を残す（ホーム/今日のひとネタ共通） -->
+  <section class="screen" data-screen="compose">
+    <p class="eyebrow" id="composeEyebrow">💬 一言</p>
+    <h2 id="composeTitle">今日、何かあった？</h2>
+    <p class="lead" id="composeLead">くだらないことでもOKです。</p>
+    <div class="input-tabs">
+      <div class="input-tab selected" id="composeTabMic" onclick="composeSelectTab('mic')"><span class="big">🎙</span>話す</div>
+      <div class="input-tab" id="composeTabText" onclick="composeSelectTab('text')"><span class="big">⌨</span>書く</div>
+    </div>
+    <div id="composeMicPane">
+      <button class="mic-btn" id="composeMicBtn" onclick="handleMicTap('compose')" aria-label="タップして話す">🎙</button>
+      <div class="mic-hint" id="composeMicHint">タップして、ひとこと話しかけてみましょう</div>
+    </div>
+    <div id="composeTextPane" style="display:none;">
+      <textarea class="note-area" id="composeTextarea" placeholder="例）今日ツナおにぎり食べた" aria-label="一言を入力"></textarea>
+      <div class="step-actions" style="margin-top:12px;">
+        <button class="cta" onclick="handleTextSave('compose')">これでOK</button>
+      </div>
+    </div>
+    <div class="reply-bubble" id="composeBubble" aria-live="polite"></div>
+    <p class="helper-note" id="composeFutureNote" style="display:none;">残りました。また何か思いついたら、いつでもどうぞ。</p>
+    <div class="step-actions" id="composeFinishActions" style="display:none;">
+      <button class="cta" onclick="go('notebook')">ネタ帳を見る →</button>
+      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    </div>
+  </section>
+
+  <!-- 11: AIからの発見 -->
+  <section class="screen" data-screen="discovery">
+    <p class="eyebrow">✨ AIからの発見</p>
+    <h2>点と点が、<br>つながっているかも。</h2>
+    <div id="discoveryBody"></div>
+    <div class="step-actions">
+      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    </div>
+  </section>
+
+  <!-- 12: ネタ帳 -->
+  <section class="screen" data-screen="notebook">
+    <p class="eyebrow">📚 ネタ帳</p>
+    <h2>これまでの一言</h2>
+    <div id="notebookBody"></div>
+    <div class="step-actions">
+      <button class="cta" onclick="openCompose('free')">🎙 もう一言残す</button>
+      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    </div>
   </section>
 </div>
 
@@ -654,6 +721,12 @@ function renderTimeOptions(){
 }
 renderTimeOptions();
 
+const RENDER_HOOKS = {
+  discovery: renderDiscoveryScreen,
+  notebook: renderNotebookScreen,
+  done: renderDoneStats,
+  home: renderHomeStats
+};
 function go(name, opts){
   const current = document.querySelector('.screen.active');
   const cameFromStep = current && current.hasAttribute('data-step');
@@ -665,6 +738,7 @@ function go(name, opts){
   document.getElementById('stage').scrollTop = 0;
   window.scrollTo(0,0);
   if(cameFromStep && !(opts && opts.silent)) showToast();
+  if(RENDER_HOOKS[name]) RENDER_HOOKS[name]();
 }
 function showToast(){
   const t = document.getElementById('toast');
@@ -710,20 +784,341 @@ function selectTab(which){
   document.getElementById('micPane').style.display = which==='mic' ? '' : 'none';
   document.getElementById('textPane').style.display = which==='text' ? '' : 'none';
 }
+function composeSelectTab(which){
+  document.getElementById('composeTabMic').classList.toggle('selected', which==='mic');
+  document.getElementById('composeTabText').classList.toggle('selected', which==='text');
+  document.getElementById('composeMicPane').style.display = which==='mic' ? '' : 'none';
+  document.getElementById('composeTextPane').style.display = which==='text' ? '' : 'none';
+}
 
-const demoReplies = [
-  '🍙 ツナ、今日の主役。',
-  '🔮 今日の運勢は……ツナです。',
-  '📌 保存しました。じわじわ効いてきます。',
-  '🎬 本日の出演者、あなたの一言（主演）。'
+/* ===================================================================
+   データ保存: ユーザー本人のブラウザ内（localStorage）だけに保存する。
+   外部サーバーへは一切送信しない。
+   =================================================================== */
+const Storage = {
+  KEY: 'ai-netabook-notes-v1',
+  getAll(){
+    try{ return JSON.parse(localStorage.getItem(this.KEY) || '[]'); }
+    catch(e){ return []; }
+  },
+  save(notes){
+    try{ localStorage.setItem(this.KEY, JSON.stringify(notes)); }
+    catch(e){ /* 保存領域がない端末では黙って諦める */ }
+  },
+  addNote(note){
+    const notes = this.getAll();
+    notes.unshift(note);
+    this.save(notes);
+    return note;
+  }
+};
+
+/* ===================================================================
+   AI_ENGINE: 差し替え可能な思考エンジン。
+   今は外部AIを一切呼ばず、キーワード辞書だけで動くルールベース版。
+   将来ここを Gemini / Claude / OpenAI 等へ差し替えても、
+   呼び出し側（react/categorize/findRelated/generateDiscovery）の
+   インターフェースは変えずに済む設計にしている。
+   =================================================================== */
+const AIEngine = (function(){
+  const CATEGORY_RULES = [
+    {category:'食べ物', keywords:['おにぎり','ツナ','ご飯','食べ','ランチ','昼食','夕飯','朝食','カレー','ラーメン','パン','お菓子']},
+    {category:'天気',   keywords:['雨','晴れ','曇り','雪','暑い','寒い','台風']},
+    {category:'仕事',   keywords:['会議','上司','仕事','残業','会社','資料','締切','打ち合わせ']},
+    {category:'不思議', keywords:['卵','双子','看板','変','珍しい','謎','不思議']},
+    {category:'愚痴',   keywords:['ムカ','イライラ','疲れ','だるい','面倒','めんどく','長すぎ','長かった']},
+    {category:'発見',   keywords:['見つけ','気づ','初めて','発見']},
+    {category:'写真',   keywords:['写真','カメラ','撮って','撮影']}
+  ];
+  const NO_IDEA_PATTERN = /思いつかない|何もな(い|かった)|特にな(い|かった)|ネタがない/;
+  const NO_IDEA_REACTIONS = [
+    '🌫️ 今日は何もない日。それも立派な記録です。',
+    '😌 特にない日、たまにはいいですね。記録しておきます。'
+  ];
+  const CATEGORY_REACTIONS = {
+    '食べ物': [t=>`🍙 ${subject(t)}、今日の主役。`, t=>`🎬 本日のキャスト：${subject(t)}。`, t=>`🔮 今日の運勢は……${subject(t)}です。`],
+    '天気':   [t=>'☔ 本日の空、なかなか営業熱心。', t=>'🌤️ 天気メモ、記録しました。'],
+    '仕事':   [t=>'⏱️ 本日の耐久コンテンツ、記録しました。', t=>'🏢 お疲れさまでした。ここに置いておきます。'],
+    '不思議': [t=>'🧐 それは気になりますね。記録しておきます。', t=>'👀 なかなか出会わない光景ですね。'],
+    '愚痴':   [t=>'😮‍💨 それは疲れますね。ここに置いておきます。', t=>'📝 モヤッとした気持ち、記録しました。'],
+    '発見':   [t=>'🔍 いいものを見つけましたね。'],
+    '写真':   [t=>'📷 写真ネタ、記録しました。']
+  };
+  const GENERIC_REACTIONS = [
+    t=>`📌 「${clip(t,14)}」、記録しました。`,
+    t=>'🗒️ 保存完了。じわじわ効いてくるやつです。',
+    t=>`🎬 本日の出演者：${clip(t,10)}（主演）。`
+  ];
+  const DISCOVERY_TEMPLATES = {
+    '食べ物': 'あなたは食べ物の話をよく記録しているようです。好きな組み合わせをまとめてみるのも面白いかもしれません。',
+    '不思議': 'あなたは日常のちょっと変わったものに目が向きやすいようです。写真や短い記録にしてみると面白いかもしれません。',
+    '仕事':   '仕事にまつわる一言が続いています。何が一番のストレス源か、まとめてみると発見があるかもしれません。',
+    '愚痴':   'モヤッとしたことがいくつか記録されています。共通する原因があるかもしれません。',
+    '天気':   '天気に関する一言が多いようです。季節の変化に敏感なタイプかもしれません。',
+    '発見':   '身の回りの発見をよく記録しているようです。',
+    '写真':   '写真にまつわる一言が増えてきました。撮りためてみるのも面白いかもしれません。'
+  };
+
+  function clip(t,n){ return t.length>n ? t.slice(0,n)+'…' : t; }
+  function matchedKeyword(text, rule){ return rule.keywords.find(k=>text.includes(k)); }
+  function subject(text){
+    for(const rule of CATEGORY_RULES){
+      const m = matchedKeyword(text, rule);
+      if(m) return m;
+    }
+    return clip(text,6);
+  }
+  function categorize(text){
+    for(const rule of CATEGORY_RULES){
+      if(matchedKeyword(text, rule)) return rule.category;
+    }
+    return null;
+  }
+  function extractKeywords(text){
+    const found = [];
+    CATEGORY_RULES.forEach(rule=>rule.keywords.forEach(k=>{ if(text.includes(k)) found.push(k); }));
+    // 辞書にない固有名詞（地名など）も拾えるよう、漢字・カタカナの連続を簡易キーワード化する
+    const generic = text.match(/[一-龠々ヶ]{2,6}|[ァ-ヶー]{2,8}/g) || [];
+    generic.forEach(g=>found.push(g));
+    return [...new Set(found)];
+  }
+  function react(text){
+    if(NO_IDEA_PATTERN.test(text)){
+      return NO_IDEA_REACTIONS[Math.floor(Math.random()*NO_IDEA_REACTIONS.length)];
+    }
+    const cat = categorize(text);
+    const pool = (cat && CATEGORY_REACTIONS[cat]) || GENERIC_REACTIONS;
+    return pool[Math.floor(Math.random()*pool.length)](text);
+  }
+  function findRelated(note, allNotes){
+    const kws = new Set(note.keywords||[]);
+    return allNotes
+      .filter(n=>n.id!==note.id)
+      .map(n=>{
+        let score=0;
+        if(n.category && n.category===note.category) score+=2;
+        (n.keywords||[]).forEach(k=>{ if(kws.has(k)) score+=1; });
+        return {note:n, score};
+      })
+      .filter(r=>r.score>=2)
+      .sort((a,b)=>b.score-a.score)
+      .slice(0,4)
+      .map(r=>r.note);
+  }
+  function generateDiscovery(notes){
+    const byCategory = {};
+    notes.forEach(n=>{ if(!n.category) return; (byCategory[n.category]=byCategory[n.category]||[]).push(n); });
+    let best=null;
+    Object.entries(byCategory).forEach(([cat,arr])=>{
+      if(arr.length>=3 && (!best || arr.length>best.arr.length)) best={cat,arr};
+    });
+    if(!best) return null;
+    return {
+      notes: best.arr.slice(0,4),
+      category: best.cat,
+      text: DISCOVERY_TEMPLATES[best.cat] || `「${best.cat}」に関する一言がいくつか集まってきました。`
+    };
+  }
+  function honorMention(notes){
+    const counts = {};
+    notes.forEach(n=>(n.keywords||[]).forEach(k=>{ counts[k]=(counts[k]||0)+1; }));
+    const entry = Object.entries(counts).sort((a,b)=>b[1]-a[1]).find(([,c])=>c>=3);
+    if(!entry) return null;
+    return {keyword:entry[0], count:entry[1]};
+  }
+  return {react, categorize, extractKeywords, findRelated, generateDiscovery, honorMention};
+})();
+
+/* ===================================================================
+   入力コンテキスト: 「最初の一言(STEP6)」と「一言を残す(compose)」の
+   両方で同じ保存・反応ロジックを使い回すための橋渡し。
+   =================================================================== */
+function getContext(name){
+  if(name==='first'){
+    return {
+      micBtn: document.getElementById('firstMicBtn'),
+      hintEl: document.getElementById('firstMicHint'),
+      textarea: document.getElementById('noteInput'),
+      bubbleEl: document.getElementById('replyBubble'),
+      switchToText: ()=>selectTab('text'),
+      afterSave(){
+        document.getElementById('futureNote').style.display = 'block';
+        document.getElementById('finishActions').style.display = 'flex';
+      }
+    };
+  }
+  return {
+    micBtn: document.getElementById('composeMicBtn'),
+    hintEl: document.getElementById('composeMicHint'),
+    textarea: document.getElementById('composeTextarea'),
+    bubbleEl: document.getElementById('composeBubble'),
+    switchToText: ()=>composeSelectTab('text'),
+    afterSave(){
+      document.getElementById('composeFutureNote').style.display = 'block';
+      document.getElementById('composeFinishActions').style.display = 'flex';
+    }
+  };
+}
+
+function startVoice(onResult, onUnsupported){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ onUnsupported(); return; }
+  try{
+    const rec = new SR();
+    rec.lang = 'ja-JP';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.onresult = (e)=>onResult(e.results[0][0].transcript);
+    rec.onerror = ()=>onUnsupported();
+    rec.onnomatch = ()=>onUnsupported();
+    rec.start();
+  }catch(e){ onUnsupported(); }
+}
+
+function handleMicTap(ctxName){
+  const ctx = getContext(ctxName);
+  ctx.micBtn.classList.add('listening');
+  ctx.hintEl.textContent = '聞いています…';
+  startVoice(
+    (transcript)=>{
+      ctx.micBtn.classList.remove('listening');
+      ctx.hintEl.textContent = 'タップして、ひとこと話しかけてみましょう';
+      finishSave(transcript, 'voice', ctx);
+    },
+    ()=>{
+      ctx.micBtn.classList.remove('listening');
+      ctx.hintEl.textContent = 'この端末では音声が使えないようです。「書く」からどうぞ。';
+      ctx.switchToText();
+    }
+  );
+}
+
+function handleTextSave(ctxName){
+  const ctx = getContext(ctxName);
+  const text = ctx.textarea.value;
+  if(!text.trim()){ ctx.textarea.focus(); return; }
+  finishSave(text, 'text', ctx);
+}
+
+function finishSave(rawText, inputType, ctx){
+  const text = rawText.trim();
+  if(!text) return;
+  const reaction = AIEngine.react(text);
+  const note = {
+    id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    timestamp: Date.now(),
+    text,
+    inputType,
+    status: 'done',
+    category: AIEngine.categorize(text),
+    keywords: AIEngine.extractKeywords(text),
+    reaction
+  };
+  Storage.addNote(note);
+  ctx.bubbleEl.textContent = reaction;
+  ctx.bubbleEl.classList.remove('show');
+  void ctx.bubbleEl.offsetWidth;
+  ctx.bubbleEl.classList.add('show');
+  ctx.afterSave();
+}
+
+/* 「今日、何かあった？」（ホーム）と「今日のひとネタ」を同じ画面で扱う */
+const TOPIC_QUESTIONS = [
+  '今日のお昼、何食べた？',
+  '今日、一番めんどくさかったことは？',
+  '今日、ちょっと笑ったことは？',
+  '今日、なんで？と思ったことは？',
+  '今日、ちょっとイラッとしたことは？',
+  '今日、いつもと違ったことは？',
+  '最近、気になっているものは？'
 ];
-function sampleReply(){
-  const bubble = document.getElementById('replyBubble');
-  bubble.textContent = demoReplies[Math.floor(Math.random()*demoReplies.length)];
-  bubble.classList.remove('show');
-  void bubble.offsetWidth;
-  bubble.classList.add('show');
-  document.getElementById('futureNote').style.display = 'block';
-  document.getElementById('finishActions').style.display = 'flex';
+function getTodayTopic(){
+  const key = 'ai-netabook-topic-v1';
+  const today = new Date().toDateString();
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(key) || 'null'); }catch(e){}
+  if(saved && saved.date === today) return saved.q;
+  const q = TOPIC_QUESTIONS[Math.floor(Math.random()*TOPIC_QUESTIONS.length)];
+  localStorage.setItem(key, JSON.stringify({date:today, q}));
+  return q;
+}
+function openCompose(mode){
+  document.getElementById('composeTextarea').value = '';
+  document.getElementById('composeBubble').classList.remove('show');
+  document.getElementById('composeBubble').textContent = '';
+  document.getElementById('composeFutureNote').style.display = 'none';
+  document.getElementById('composeFinishActions').style.display = 'none';
+  composeSelectTab('mic');
+  if(mode === 'topic'){
+    document.getElementById('composeEyebrow').textContent = '💡 今日のひとネタ';
+    document.getElementById('composeTitle').textContent = getTodayTopic();
+    document.getElementById('composeLead').textContent = '一問だけ。気軽にどうぞ。';
+  }else{
+    document.getElementById('composeEyebrow').textContent = '💬 一言';
+    document.getElementById('composeTitle').textContent = '今日、何かあった？';
+    document.getElementById('composeLead').textContent = 'くだらないことでもOKです。';
+  }
+  go('compose');
+}
+
+/* ===================================================================
+   画面描画: ネタ帳一覧 / AIからの発見 / 件数表示
+   =================================================================== */
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDate(ts){
+  const d = new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function renderNotebookScreen(){
+  const notes = Storage.getAll();
+  const body = document.getElementById('notebookBody');
+  if(!notes.length){
+    body.innerHTML = '<div class="empty-card">まだメモがありません。<br>🎙話す・⌨書くから、最初の一言を残してみましょう。</div>';
+    return;
+  }
+  body.innerHTML = notes.map(n=>`
+    <div class="note-card">
+      <p class="note-meta">${formatDate(n.timestamp)}${n.category ? ' ・ '+escapeHtml(n.category) : ''}${n.inputType==='voice' ? ' ・ 🎙' : ' ・ ⌨'}</p>
+      <p class="note-text">${escapeHtml(n.text)}</p>
+      <p class="note-reaction">${escapeHtml(n.reaction||'')}</p>
+    </div>`).join('');
+}
+function renderDiscoveryScreen(){
+  const notes = Storage.getAll();
+  const body = document.getElementById('discoveryBody');
+  const honor = AIEngine.honorMention(notes);
+  const discovery = AIEngine.generateDiscovery(notes);
+  let html = '';
+  if(honor){
+    html += `<div class="card">
+      <p style="margin:0 0 8px;font-weight:700;">🔁 この話、そろそろ殿堂入りです。</p>
+      <p style="margin:0;font-size:14px;color:var(--ink-soft);line-height:1.8;">「${escapeHtml(honor.keyword)}」、${honor.count}回登場しています。次は少し違う角度から話してみませんか？</p>
+    </div>`;
+  }
+  if(discovery){
+    const chips = discovery.notes.map(n=>`<div class="demo-chip">${escapeHtml(clipText(n.text,16))}</div>`).join('');
+    html += `<div class="card">
+      <p style="margin:0 0 10px;font-weight:700;">見つかったつながり</p>
+      <div class="demo-strip" style="padding:0 0 12px;">${chips}</div>
+      <p style="margin:0;font-size:14.5px;line-height:1.85;">${escapeHtml(discovery.text)}</p>
+    </div>`;
+  }
+  if(!html){
+    html = `<div class="empty-card">まだ発見はありません。<br>メモがもう少したまると、ここに出てきます。</div>`;
+  }
+  body.innerHTML = html;
+}
+function clipText(t,n){ return t.length>n ? t.slice(0,n)+'…' : t; }
+function renderDoneStats(){
+  const el = document.getElementById('doneNoteCount');
+  if(el) el.textContent = Storage.getAll().length;
+}
+function renderHomeStats(){
+  const el = document.getElementById('homeNoteCount');
+  if(!el) return;
+  const n = Storage.getAll().length;
+  el.textContent = n>0 ? `これまでに${n}個の一言` : 'これまでの一言、ぜんぶここに';
 }
 </script>
