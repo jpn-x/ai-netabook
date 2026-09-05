@@ -680,6 +680,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
         <a class="home-tile" href="/workshop/" style="text-decoration:none;"><span class="ic">🏭</span><div>プロンプト工房<small>好きなAIに渡す準備をします</small></div></a>
       </div>
       <p class="footer-note">あなたのメモは、この端末のブラウザの中だけに残ります。<br>外部のサーバーへは送信・保存されません。</p>
+      <p class="footer-note"><button type="button" onclick="resetAll()" style="background:none;border:none;color:var(--ink-soft);font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer;padding:0;">はじめから やり直す（全データ削除）</button></p>
     </div>
   </section>
 
@@ -1553,11 +1554,16 @@ function renderHomeStats(){
    リセット用: URLに ?reset=1 を付けて開くと、登録前の新規状態に戻す。
    （動作確認・やり直し用。iPhoneでも開発者ツールなしで使える）
    =================================================================== */
+const RESET_KEYS = ['ai-netabook-notify-slot','ai-netabook-setup-complete','ai-netabook-notes-v1','ai-netabook-topic-v1'];
+function resetAll(){
+  if(!confirm('本当に全データを削除して、はじめからやり直しますか？\nこの操作は元に戻せません。')) return;
+  RESET_KEYS.forEach(k=>localStorage.removeItem(k));
+  location.href = location.pathname;
+}
 (function checkReset(){
   const params = new URLSearchParams(location.search);
   if(params.get('reset') === '1'){
-    ['ai-netabook-notify-slot','ai-netabook-setup-complete','ai-netabook-notes-v1','ai-netabook-topic-v1']
-      .forEach(k=>localStorage.removeItem(k));
+    RESET_KEYS.forEach(k=>localStorage.removeItem(k));
     location.replace(location.pathname);
   }
 })();
