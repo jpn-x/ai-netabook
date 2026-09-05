@@ -256,7 +256,26 @@ h1,h2,h3,.display{
   background:var(--coral);color:#fff;
   font-size:11px;font-weight:700;
   padding:4px 10px;border-radius:99px;
+  animation:pulse 1.8s ease-in-out infinite;
 }
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+@media (prefers-reduced-motion:reduce){.tap-target .tap-arrow{animation:none;}}
+
+/* step-complete toast */
+.toast{
+  position:fixed;left:50%;top:18px;
+  transform:translate(-50%,-140%);
+  background:var(--ink);color:var(--cream);
+  font-weight:700;font-size:13.5px;
+  padding:10px 20px;border-radius:99px;
+  box-shadow:0 8px 20px var(--shadow);
+  z-index:50;
+  display:flex;align-items:center;gap:6px;
+  transition:transform .35s cubic-bezier(.34,1.4,.64,1);
+  pointer-events:none;
+}
+.toast.show{transform:translate(-50%,0);}
+@media (prefers-reduced-motion:reduce){.toast{transition:none;}}
 .mock-google{
   background:var(--paper);
   border:1px solid var(--line);
@@ -411,6 +430,7 @@ h1,h2,h3,.display{
 }
 </style>
 
+<div class="toast" id="toast" aria-live="polite">✓ できました</div>
 <div class="stage" id="stage">
   <div class="topbar">
     <button class="back-btn" id="backBtn" aria-label="戻る">←</button>
@@ -427,9 +447,9 @@ h1,h2,h3,.display{
     <div class="top-badge">完全無料・Googleだけで作る</div>
     <div class="mock-phone">📓</div>
     <h1 class="top-title">今日、<span class="accent">何かあった？</span></h1>
-    <p class="top-sub">一言残すだけ。<br>あとはAIが育てます。<br>あなた専用の「AIネタ帳」を<br>自分のGoogleアカウントの中に作ります。</p>
+    <p class="top-sub">一言残すだけ。<br>くだらないことでもOKです。<br>あとは、AIが育てます。</p>
     <button class="cta" onclick="go('intro')">タップしてつくる →</button>
-    <div class="top-foot">かかる時間の目安：約5分</div>
+    <div class="top-foot">あなたのGoogleアカウントの中に作ります・約5分</div>
   </section>
 
   <!-- 1: この教科書でできること -->
@@ -454,7 +474,7 @@ h1,h2,h3,.display{
 
   <!-- 2: Googleアカウント確認 -->
   <section class="screen" data-screen="check" data-step="1">
-    <p class="eyebrow">かんたん確認</p>
+    <p class="eyebrow">STEP 1</p>
     <h2>使っているスマホ、<br>Googleでログインしてる？</h2>
     <p class="lead">ふだん使っているGmailやYouTubeと同じアカウントでOKです。新しく何かを覚える必要はありません。</p>
     <div class="mock-google">
@@ -472,7 +492,7 @@ h1,h2,h3,.display{
 
   <!-- 3: STEP1 フォルダ -->
   <section class="screen" data-screen="step1" data-step="2">
-    <p class="eyebrow">STEP 1</p>
+    <p class="eyebrow">STEP 2</p>
     <h2>ネタ帳の「置き場所」を<br>ひとつ作ります。</h2>
     <p class="lead">Google Driveの中に、あなた専用のフォルダをひとつ作るだけです。</p>
     <div class="tap-target">
@@ -496,7 +516,7 @@ h1,h2,h3,.display{
 
   <!-- 4: STEP2 テンプレートコピー -->
   <section class="screen" data-screen="step2" data-step="3">
-    <p class="eyebrow">STEP 2</p>
+    <p class="eyebrow">STEP 3</p>
     <h2>ネタ帳の「中身」を<br>コピーします。</h2>
     <p class="lead">すでに用意してあるテンプレートを、さっきのフォルダにコピーするだけ。作る必要はありません。</p>
     <div class="tap-target">
@@ -521,7 +541,7 @@ h1,h2,h3,.display{
 
   <!-- 5: STEP3 権限許可 -->
   <section class="screen" data-screen="step3" data-step="4">
-    <p class="eyebrow">STEP 3</p>
+    <p class="eyebrow">STEP 4</p>
     <h2>あなたの代わりに<br>動く許可を出します。</h2>
     <p class="lead">「あなた専用のロボット」が、あなたのフォルダの中だけで働けるように、許可のボタンを押します。他の人のデータには触れません。</p>
     <div class="tap-target">
@@ -547,7 +567,7 @@ h1,h2,h3,.display{
 
   <!-- 6: STEP4 通知タイミング -->
   <section class="screen" data-screen="step4" data-step="5">
-    <p class="eyebrow">STEP 4</p>
+    <p class="eyebrow">STEP 5</p>
     <h2>いつ頃なら、<br>ちょっと一息つけそう？</h2>
     <p class="lead">1日1回だけ、そっと声をかけます。うるさくしません。あとから変更もできます。</p>
     <div class="card" style="padding:8px;">
@@ -561,7 +581,7 @@ h1,h2,h3,.display{
 
   <!-- 7: 最初の一言 -->
   <section class="screen" data-screen="firstinput" data-step="6">
-    <p class="eyebrow">さいごに</p>
+    <p class="eyebrow">STEP 6・さいごに</p>
     <h2>最初の一言を、<br>残してみましょう。</h2>
     <p class="lead">どうでもいいことでOKです。うまく書こうとしなくて大丈夫。</p>
     <div class="input-tabs">
@@ -569,16 +589,16 @@ h1,h2,h3,.display{
       <div class="input-tab" id="tabText" onclick="selectTab('text')"><span class="big">⌨</span>書く</div>
     </div>
     <div id="micPane">
-      <button class="mic-btn" onclick="sampleReply()">🎙</button>
-      <div class="mic-hint">タップして試しに話しかけてみる<br>（今はデモ動作です）</div>
+      <button class="mic-btn" onclick="sampleReply()" aria-label="タップして話す">🎙</button>
+      <div class="mic-hint">タップして、ひとこと話しかけてみましょう</div>
     </div>
     <div id="textPane" style="display:none;">
-      <textarea class="note-area" id="noteInput" placeholder="例）今日ツナおにぎり食べた"></textarea>
+      <textarea class="note-area" id="noteInput" placeholder="例）今日ツナおにぎり食べた" aria-label="最初の一言を入力"></textarea>
       <div class="step-actions" style="margin-top:12px;">
         <button class="cta" onclick="sampleReply()">これでOK</button>
       </div>
     </div>
-    <div class="reply-bubble" id="replyBubble">🍙 ツナ、今日の主役。</div>
+    <div class="reply-bubble" id="replyBubble" aria-live="polite">🍙 ツナ、今日の主役。</div>
     <div class="step-actions" id="finishActions" style="display:none;">
       <button class="cta" onclick="go('done')">できた！つぎへ →</button>
     </div>
@@ -639,7 +659,9 @@ function renderTimeOptions(){
 }
 renderTimeOptions();
 
-function go(name){
+function go(name, opts){
+  const current = document.querySelector('.screen.active');
+  const cameFromStep = current && current.hasAttribute('data-step');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const target = document.querySelector(`.screen[data-screen="${name}"]`);
   target.classList.add('active');
@@ -647,6 +669,13 @@ function go(name){
   updateChrome(target);
   document.getElementById('stage').scrollTop = 0;
   window.scrollTo(0,0);
+  if(cameFromStep && !(opts && opts.silent)) showToast();
+}
+function showToast(){
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(()=>t.classList.remove('show'), 1400);
 }
 function back(){
   if(history.length<2) return;
