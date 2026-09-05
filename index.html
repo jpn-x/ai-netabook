@@ -456,17 +456,18 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
 
 .tabbar{
   display:none;
-  position:sticky;bottom:0;
+  position:fixed;bottom:0;left:0;right:0;
+  max-width:480px;margin:0 auto;
   background:var(--paper);
   border-top:1px solid var(--line);
   box-shadow:0 -4px 16px var(--shadow);
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));
-  margin-top:24px;
   gap:6px;
   z-index:30;
 }
 .tabbar.show{display:flex;}
 .tabbar.kb-hidden{display:none !important;}
+.stage.with-tabbar{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
 .tab-btn{
   flex:1;border:none;background:transparent;
   display:flex;flex-direction:column;align-items:center;gap:2px;
@@ -1140,39 +1141,80 @@ function getContext(name){
   };
 }
 
-function startVoice(onResult, onUnsupported){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ onUnsupported(); return; }
-  try{
-    const rec = new SR();
-    rec.lang = 'ja-JP';
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
-    rec.onresult = (e)=>onResult(e.results[0][0].transcript);
-    rec.onerror = ()=>onUnsupported();
-    rec.onnomatch = ()=>onUnsupported();
-    rec.start();
-  }catch(e){ onUnsupported(); }
+/* 進行中の音声認識をコンテキスト別に保持。
+   マイクをもう一度タップした時に「新規開始」ではなく「停止して確定」させるため。 */
+const activeRecognitions = {};
+
+function resetMicUI(ctx, message){
+  ctx.micBtn.classList.remove('listening');
+  ctx.hintEl.textContent = message || 'タップして、ひとこと話しかけてみましょう';
 }
 
 function handleMicTap(ctxName){
   const ctx = getContext(ctxName);
-  ctx.micBtn.classList.add('listening');
-  ctx.hintEl.innerHTML = '🔴 話しています…';
-  startVoice(
-    (transcript)=>{
-      ctx.micBtn.classList.remove('listening');
-      ctx.hintEl.innerHTML = '✓ 文字にしました';
-      if(ctx.textarea) ctx.textarea.value = transcript;
-      finishSave(transcript, 'voice', ctx);
-      setTimeout(()=>{ ctx.hintEl.textContent = 'タップして、ひとこと話しかけてみましょう'; }, 2200);
-    },
-    ()=>{
-      ctx.micBtn.classList.remove('listening');
-      ctx.hintEl.textContent = 'この端末では音声入力が利用できません。下の「書く」から文字で入力できます。';
-      ctx.switchToText();
+
+  // すでに聞き取り中 → もう一度タップされたら、そこで区切って確定させる
+  if(activeRecognitions[ctxName]){
+    ctx.hintEl.textContent = 'まとめています…';
+    try{ activeRecognitions[ctxName].stop(); }catch(e){}
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    resetMicUI(ctx, 'この端末では音声入力が利用できません。下の「書く」から文字で入力できます。');
+    ctx.switchToText();
+    return;
+  }
+
+  let settled = false;
+  let rec;
+  try{
+    rec = new SR();
+  }catch(e){
+    resetMicUI(ctx, 'この端末では音声入力が利用できません。下の「書く」から文字で入力できます。');
+    ctx.switchToText();
+    return;
+  }
+  rec.lang = 'ja-JP';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+
+  rec.onresult = (e)=>{
+    settled = true;
+    const transcript = e.results[0][0].transcript;
+    delete activeRecognitions[ctxName];
+    ctx.micBtn.classList.remove('listening');
+    ctx.hintEl.innerHTML = '✓ 文字にしました';
+    if(ctx.textarea) ctx.textarea.value = transcript;
+    finishSave(transcript, 'voice', ctx);
+    setTimeout(()=>resetMicUI(ctx), 2200);
+  };
+  rec.onerror = (e)=>{
+    settled = true;
+    delete activeRecognitions[ctxName];
+    if(e && (e.error === 'not-allowed' || e.error === 'service-not-allowed')){
+      resetMicUI(ctx, 'マイクの使用が許可されていないようです。ブラウザの設定を確認するか、「書く」から入力できます。');
+    }else if(e && e.error === 'no-speech'){
+      resetMicUI(ctx, 'うまく聞き取れませんでした。もう一度タップして話しかけてみましょう。');
+    }else{
+      resetMicUI(ctx, 'うまくいかなかったみたいです。もう一度試すか、「書く」から入力できます。');
     }
-  );
+  };
+  rec.onend = ()=>{
+    delete activeRecognitions[ctxName];
+    if(!settled) resetMicUI(ctx, 'うまく聞き取れませんでした。もう一度タップして話しかけてみましょう。');
+  };
+
+  try{
+    rec.start();
+    activeRecognitions[ctxName] = rec;
+    ctx.micBtn.classList.add('listening');
+    ctx.hintEl.innerHTML = '🔴 話しています…（もう一度タップで確定）';
+  }catch(e){
+    resetMicUI(ctx, 'この端末では音声入力が利用できません。下の「書く」から文字で入力できます。');
+    ctx.switchToText();
+  }
 }
 
 function handleTextSave(ctxName){
