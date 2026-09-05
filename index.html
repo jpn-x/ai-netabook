@@ -468,7 +468,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     <h1 class="top-title">今日、<span class="accent">何かあった？</span></h1>
     <p class="top-sub">一言残すだけ。<br>くだらないことでもOKです。<br>あとは、AIが育てます。</p>
     <button class="cta" onclick="go('intro')">タップしてつくる →</button>
-    <div class="top-foot">あなたのGoogleアカウントの中に作ります・約5分</div>
+    <div class="top-foot">この端末の中に、あなただけのネタ帳を作ります・約5分</div>
   </section>
 
   <!-- 1: この教科書でできること -->
@@ -486,7 +486,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     <p class="lead" style="margin-top:18px;">これが積み上がると、AIがあとで気づく<br>つながりが出てきます。</p>
     <div class="step-actions">
       <button class="cta" onclick="go('check')">はじめる →</button>
-      <p class="helper-note">あなた専用のGoogleアカウントの中だけで作ります</p>
+      <p class="helper-note">メモは、この端末のブラウザの中だけに残ります</p>
     </div>
   </section>
 
@@ -651,7 +651,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     <div class="step-actions">
       <button class="cta secondary" onclick="go('top')">最初からもう一度見る</button>
     </div>
-    <p class="footer-note">あなたのメモは、あなたのGoogleアカウントの中だけに残ります。<br>このページがデータを預かることはありません。</p>
+    <p class="footer-note">あなたのメモは、この端末のブラウザの中だけに残ります。<br>外部のサーバーへは送信・保存されません。</p>
   </section>
 
   <!-- 10: 一言を残す（ホーム/今日のひとネタ共通） -->
@@ -702,10 +702,21 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     </div>
   </section>
 
-  <!-- 13: AIに見てもらう -->
+  <!-- 13: AIに、どう聞いてみる？(目的選択) -->
+  <section class="screen" data-screen="aipurpose">
+    <p class="eyebrow">🤖 AIに見てもらう</p>
+    <h2>AIに、<br>どう聞いてみる？</h2>
+    <p class="lead">気になるものをひとつ選んでください。</p>
+    <div id="purposeGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+    <div class="step-actions" style="margin-top:24px;">
+      <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
+    </div>
+  </section>
+
+  <!-- 14: AI用プロンプト生成結果 -->
   <section class="screen" data-screen="aiprompt">
-    <p class="eyebrow">🧠 AIに見てもらう</p>
-    <h2>あなたのメモを、<br>AI用にまとめました。</h2>
+    <p class="eyebrow" id="aiPromptEyebrow">🧠 AIに見てもらう</p>
+    <h2>これを、<br>AIに貼ってください。</h2>
     <p class="lead">コピーして、好きなAIに貼るだけです。<br>このまとめ作業に外部AIは使っていません。</p>
     <div class="card" id="aiSummaryCard"></div>
     <textarea class="note-area" id="aiPromptText" style="min-height:220px;font-size:13px;" readonly aria-label="AI用プロンプト"></textarea>
@@ -715,6 +726,7 @@ button.home-tile:focus-visible{outline:3px solid var(--yellow);outline-offset:2p
     <p class="helper-note" id="copyStatus" style="margin-top:14px;">好きなAIを選んでください。タップすると自動でコピーして開きます。</p>
     <div id="aiServiceButtons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;"></div>
     <div class="step-actions" style="margin-top:24px;">
+      <button class="cta secondary" onclick="go('aipurpose')">別の目的で作り直す</button>
       <button class="cta secondary" onclick="go('home')">ホームへ戻る</button>
     </div>
   </section>
@@ -784,6 +796,7 @@ async function saveNotifyPreference(){
 const RENDER_HOOKS = {
   discovery: renderDiscoveryScreen,
   notebook: renderNotebookScreen,
+  aipurpose: renderPurposeScreen,
   aiprompt: renderAiPromptScreen,
   done: renderDoneStats,
   home: renderHomeStats
@@ -1200,7 +1213,7 @@ function renderDiscoveryScreen(){
     ctaHtml = `<div class="card">
       <p style="margin:0 0 10px;font-weight:700;">🧠 このメモ、AIに見てもらう？</p>
       <p style="margin:0 0 14px;font-size:14px;color:var(--ink-soft);line-height:1.8;">好きなAI（ChatGPT / Gemini / Grok / Claude）に貼るだけの文章を作ります。</p>
-      <button class="cta" onclick="go('aiprompt')">AIに見てもらう →</button>
+      <button class="cta" onclick="go('aipurpose')">AIに見てもらう →</button>
     </div>`;
   }
   body.innerHTML = weekHtml + honorHtml + ctaHtml;
@@ -1216,6 +1229,34 @@ const AI_SERVICES = [
   {name:'Grok', url:'https://grok.com/'},
   {name:'Claude', url:'https://claude.ai/new'}
 ];
+
+/* 目的別プロンプトのパーツ。新しい目的を足したい時はここに1行足すだけでよい構造。 */
+const PURPOSES = [
+  {key:'self',   icon:'🧠', label:'自分を知る',        instruction:'このメモから、私自身がまだ気づいていない興味や思考の傾向を探してください。'},
+  {key:'funny',  icon:'😂', label:'笑えるところを探す', instruction:'このメモの中から、自分では気づいていなかった面白い共通点や、笑えるポイントを探してください。'},
+  {key:'talk',   icon:'🗣', label:'会話のタネにする',   instruction:'このメモから、他人に話しやすい話題を3つ作ってください。同じ話の繰り返しではなく、それぞれ違う角度の話題にしてください。'},
+  {key:'idea',   icon:'💡', label:'アイデアにする',     instruction:'このメモから、趣味・創作・生活改善・新しいサービスにつながりそうな種を探してください。'},
+  {key:'biz',    icon:'💼', label:'ビジネスにする',     instruction:'このメモに含まれる不満・不便・欲求から、実際に解決できそうな問題と、ビジネスにつながる可能性を探してください。'},
+  {key:'create', icon:'🎨', label:'創作にする',         instruction:'このメモから、短い物語・詩・キャラクター・作品のアイデアにつながりそうな要素を探してください。'},
+  {key:'learn',  icon:'📚', label:'学びにする',         instruction:'このメモの中から、もっと深く調べたり学んだりすると面白そうなテーマを見つけてください。'},
+  {key:'money',  icon:'💰', label:'お金・投資の視点',   instruction:'このメモに出てくる消費・興味・不便の傾向から、お金や投資について考えるヒントになりそうな視点を探してください（具体的な売買の助言ではなく、気づきの提示にとどめてください）。'},
+  {key:'auto',   icon:'✨', label:'おまかせ',           instruction:'このメモ全体を自由に見て、あなたが一番面白い、または役に立つと思う切り口で分析してください。'}
+];
+let selectedPurposeKey = 'auto';
+
+function renderPurposeScreen(){
+  const grid = document.getElementById('purposeGrid');
+  grid.innerHTML = PURPOSES.map(p =>
+    `<button class="cta secondary" style="border:1px solid var(--line);border-radius:16px;padding:18px 10px;font-size:13.5px;display:flex;flex-direction:column;gap:6px;align-items:center;" onclick="selectPurpose('${p.key}')">
+      <span style="font-size:22px;">${p.icon}</span>${p.label}
+    </button>`
+  ).join('');
+}
+function selectPurpose(key){
+  selectedPurposeKey = key;
+  go('aiprompt');
+}
+
 function buildLocalSummary(notes){
   const counts = {}, kwCounts = {};
   notes.forEach(n=>{
@@ -1226,51 +1267,65 @@ function buildLocalSummary(notes){
   const topKeywords = Object.entries(kwCounts).filter(([,c])=>c>=2).sort((a,b)=>b[1]-a[1]).slice(0,6);
   return {topCategories, topKeywords};
 }
-function buildAiPrompt(notes){
+
+/* 【固定】プロンプトOS部分: 役割・考え方・禁止事項・品質基準は毎回変えない */
+const PROMPT_OS = `あなたは私の思考整理パートナーです。
+私が日常で残した、何気ない一言メモを渡します。
+
+【考え方】
+・単なる要約ではなく、私自身がまだ気づいていない共通点・傾向・可能性を探してください。
+・無理に意味を作らないでください。事実と推測は必ず分けてください。
+  事実: メモに書かれている内容そのもの
+  推測: そこから考えられる可能性（「〜かもしれません」「〜のようです」を使う）
+
+【禁止事項】
+・私を無条件に褒めないでください。「あなたは天才です」「素晴らしい発想です」「最高です」のような安易な賞賛は禁止です。
+・メモに書かれていない事実を勝手に作らないでください。`;
+
+function formatDateFull(ts){
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function buildAiPrompt(notes, purposeKey){
+  const purpose = PURPOSES.find(p=>p.key===purposeKey) || PURPOSES[PURPOSES.length-1];
   const summary = buildLocalSummary(notes);
-  const catLines = summary.topCategories.map(([c,n])=>`・${c}: ${n}件`).join('\n') || '（まだ傾向が出るほどメモがたまっていません）';
-  const kwLines = summary.topKeywords.map(([k,n])=>`・${k}（${n}回）`).join('\n') || '（まだ繰り返しの言葉は見つかっていません）';
+  const catLines = summary.topCategories.map(([c,n])=>`・${c}: ${n}件`).join('\n') || '・まだ傾向が出るほどメモがたまっていません（事実）';
+  const kwLines = summary.topKeywords.map(([k,n])=>`・${k}（${n}回）`).join('\n') || '・まだ繰り返し出てくる言葉は見つかっていません（事実）';
   const recent = notes.slice(0,40);
-  const memoLines = recent.map((n,i)=>`${i+1}. (${formatDate(n.timestamp)}) ${n.text}`).join('\n');
-  return `あなたは私の思考整理パートナーです。
-以下は、私が最近残した日常の一言メモです。
+  const memoLines = recent.map(n=>`${formatDateFull(n.timestamp)}\n「${n.text}」`).join('\n\n');
 
-単なる要約ではなく、私自身がまだ気づいていない、
-・繰り返し登場するテーマ
-・意外な共通点
-・興味や関心
-・日常の不満や不便
-・面白い発想の種
-・会話のタネ
-・趣味や創作につながる可能性
-・仕事や生活の改善につながる可能性
-・ビジネスや副業につながる可能性
-を探してください。
+  return `${PROMPT_OS}
 
-ただし、無理に意味を作らないでください。事実と推測を分けてください。
-私を無条件に褒めないでください。「あなたは天才です」「素晴らしい発想です」のようなヨイショは禁止です。
+【今回の目的】
+${purpose.icon} ${purpose.label}
 
-最後に、「自分では思いつかなかったかもしれない発見」を3つ挙げてください。
-さらに、その中から「ちょっと試してみてもいいかも」と思える行動を1つ提案してください。
+【AIへの依頼】
+${purpose.instruction}
 
-【メモの傾向（件数の多い順）】
+【今週の傾向（事実）】
 ${catLines}
-
-【繰り返し登場する言葉】
 ${kwLines}
 
-【私のメモ（全${notes.length}件中、直近${recent.length}件）】
-${memoLines}`;
+【私の最近のメモ（全${notes.length}件中、直近${recent.length}件）】
+${memoLines}
+
+【最後にお願い】
+・ちょっと意外な視点を1つ入れてください。
+・最後に、この期間の私へ軽く一言だけツッコミを入れてください（責めるのではなく、笑えるくらいの軽さで）。`;
 }
+
 function renderAiPromptScreen(){
   const notes = Storage.getAll();
-  document.getElementById('aiPromptText').value = buildAiPrompt(notes);
+  const purpose = PURPOSES.find(p=>p.key===selectedPurposeKey) || PURPOSES[PURPOSES.length-1];
+  const promptText = buildAiPrompt(notes, selectedPurposeKey);
+  document.getElementById('aiPromptText').value = promptText;
+  document.getElementById('aiPromptEyebrow').textContent = `${purpose.icon} ${purpose.label}`;
   const summary = buildLocalSummary(notes);
   const chips = summary.topCategories.length
     ? summary.topCategories.map(([c,n])=>`<div class="demo-chip">${escapeHtml(c)} ${n}件</div>`).join('')
     : '<div class="demo-chip">まだ傾向は出ていません</div>';
   document.getElementById('aiSummaryCard').innerHTML = `
-    <p style="margin:0 0 10px;font-weight:700;">メモ ${notes.length}件をまとめました</p>
+    <p style="margin:0 0 10px;font-weight:700;">メモ${notes.length}件・${promptText.length}文字のプロンプトができました</p>
     <div class="demo-strip" style="padding:0 0 4px;">${chips}</div>`;
   document.getElementById('aiServiceButtons').innerHTML = AI_SERVICES.map(s=>
     `<button class="cta secondary" style="border:1px solid var(--line);border-radius:14px;padding:14px 10px;" onclick="openAiService('${s.url}')">${s.name}で開く</button>`
