@@ -1,3 +1,13 @@
 name = "ai-netabook-proxy"
 main = "worker.js"
 compatibility_date = "2025-01-01"
+
+[[kv_namespaces]]
+binding = "SUBSCRIPTIONS"
+id = "0683ce1f260b4e09bdd3bcbb07c45db5"
+
+[triggers]
+crons = ["0 * * * *"]
+
+[vars]
+VAPID_PUBLIC_KEY = "BMLrx8cWrIVvLppcEqL2u4oEC8gjYFUkT5WCMGEdTgL5NcQaJ3oMzp4RreuiZrfxxsVeTsZ4fAgTXUFpiBhceao"
